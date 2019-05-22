@@ -8464,6 +8464,10 @@ void menu_lcd_lcdupdate_func(void)
 		lcd_next_update_millis = _millis() + LCD_UPDATE_INTERVAL;
 	}
 	if (!SdFatUtil::test_stack_integrity()) stack_error();
+#ifdef DEBUG_STEPPER_TIMER_MISSED
+	if (stepper_timer_overflow_state)
+		stepper_timer_overflow();
+#endif /* DEBUG_STEPPER_TIMER_MISSED */
 	lcd_ping(); //check that we have received ping command if we are in farm mode
 	lcd_send_status();
 	if (lcd_commands_type == LCD_COMMAND_V2_CAL) lcd_commands();

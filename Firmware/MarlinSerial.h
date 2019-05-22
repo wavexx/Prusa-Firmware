@@ -123,6 +123,7 @@ class MarlinSerial //: public Stream
 		}
 	}
     
+#if 0	// Remove checkRx (not used)
     static void checkRx(void)
     {
         if (selectedSerialPort == 0) {
@@ -175,7 +176,7 @@ class MarlinSerial //: public Stream
             }
         }
     }
-    
+#endif    // remove checkRx
     
     private:
     static void printNumber(unsigned long, uint8_t);

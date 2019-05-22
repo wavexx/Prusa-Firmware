@@ -23,8 +23,12 @@
 
 #include "planner.h"
 
-#define ENABLE_STEPPER_DRIVER_INTERRUPT()  TIMSK1 |= (1<<OCIE1A)
-#define DISABLE_STEPPER_DRIVER_INTERRUPT() TIMSK1 &= ~(1<<OCIE1A)
+// Interrupt enable/disable macros
+
+#define ENABLE_STEPPER_DRIVER_INTERRUPT()  sbi(TIMSK1, OCIE1A)
+#define DISABLE_STEPPER_DRIVER_INTERRUPT() cbi(TIMSK1, OCIE1A)
+
+#define ENABLE_ISRs()	do { cli(); if (in_temp_isr) DISABLE_TEMPERATURE_INTERRUPT(); else ENABLE_TEMPERATURE_INTERRUPT(); ENABLE_STEPPER_DRIVER_INTERRUPT(); } while(0)
 
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 extern bool abort_on_endstop_hit;

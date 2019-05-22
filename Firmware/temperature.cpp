@@ -1130,7 +1130,7 @@ void tp_init()
   // Use timer0 for temperature measurement
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128;
-  TIMSK0 |= (1<<OCIE0B);  
+  sbi(TIMSK0, OCIE0B);
 #endif //SYSTEM_TIMER_2
 
 
@@ -1632,16 +1632,21 @@ void adc_ready(void) //callback from adc when sampling finished
 #ifdef SYSTEM_TIMER_2
 ISR(TIMER2_COMPB_vect)
 #else //SYSTEM_TIMER_2
+volatile bool in_temp_isr = false;
+
 ISR(TIMER0_COMPB_vect)
 #endif //SYSTEM_TIMER_2
 {
-	static bool _lock = false;
-	if (_lock) return;
-	_lock = true;
-	asm("sei");
+  // The stepper ISR can interrupt this ISR. When it does it re-enables this ISR
+  // at the end of its run, potentially causing re-entry. This flag prevents it.
+  if (in_temp_isr) return;
+  in_temp_isr = true;
 
-	if (!temp_meas_ready) adc_cycle();
-	lcd_buttons_update();
+  // Allow INTs (especially UART and stepper)
+  DISABLE_TEMPERATURE_INTERRUPT(); //Disable Temperature ISR
+  sei();
+
+  if (!temp_meas_ready) adc_cycle();
 
   static unsigned char pwm_count = (1 << SOFT_PWM_SCALE);
   static unsigned char soft_pwm_0;
@@ -1961,6 +1966,11 @@ ISR(TIMER0_COMPB_vect)
   
 #endif //ifndef SLOW_PWM_HEATERS
 
+  //
+  // Update lcd buttons 488 times per second
+  //
+  static bool do_buttons;
+  if ((do_buttons ^= true)) lcd_buttons_update();
   
 #ifdef BABYSTEPPING
   for(uint8_t axis=0;axis<3;axis++)
@@ -1969,18 +1979,20 @@ ISR(TIMER0_COMPB_vect)
    
     if(curTodo>0)
     {
-		asm("cli");
+// *** NOTE: already running in an elevated thread.
+//           There is no conflict with the stepper
+//		asm("cli");
       babystep(axis,/*fwd*/true);
       babystepsTodo[axis]--; //less to do next time
-		asm("sei");
+//		asm("sei");
     }
     else
     if(curTodo<0)
     {
-		asm("cli");
+//		asm("cli");
       babystep(axis,/*fwd*/false);
       babystepsTodo[axis]++; //less to do next time
-		asm("sei");
+//		asm("sei");
     }
   }
 #endif //BABYSTEPPING
@@ -1989,7 +2001,9 @@ ISR(TIMER0_COMPB_vect)
   check_fans();
 #endif //(defined(TACH_0))
 
-	_lock = false;
+  cli();
+  in_temp_isr = false;
+  ENABLE_TEMPERATURE_INTERRUPT(); //re-enable Temperature ISR
 }
 
 void check_max_temp()

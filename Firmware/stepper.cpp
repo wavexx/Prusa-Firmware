@@ -273,6 +273,8 @@ ISR(TIMER1_COMPA_vect) {
     // Fix the next interrupt to be executed after 8us from now.
     OCR1A = TCNT1 + 16; 
   }
+
+  ENABLE_ISRs();
 }
 
 uint8_t last_dir_bits = 0;
@@ -589,7 +591,8 @@ FORCE_INLINE void stepper_check_endstops()
 FORCE_INLINE void stepper_tick_lowres()
 {
   for (uint8_t i=0; i < step_loops; ++ i) { // Take multiple steps per interrupt (For high speed moves)
-    MSerial.checkRx(); // Check for serial chars.
+    // Not needed - ints are enabled here
+    //MSerial.checkRx(); // Check for serial chars.
     // Step in X axis
     counter_x.lo += current_block->steps_x.lo;
     if (counter_x.lo > 0) {
@@ -651,7 +654,8 @@ FORCE_INLINE void stepper_tick_lowres()
 FORCE_INLINE void stepper_tick_highres()
 {
   for (uint8_t i=0; i < step_loops; ++ i) { // Take multiple steps per interrupt (For high speed moves)
-    MSerial.checkRx(); // Check for serial chars.
+    // Not needed - ints are enabled here
+    //MSerial.checkRx(); // Check for serial chars.
     // Step in X axis
     counter_x.wide += current_block->steps_x.wide;
     if (counter_x.wide > 0) {
@@ -759,6 +763,13 @@ FORCE_INLINE void advance_spread(uint16_t timer)
 
 
 FORCE_INLINE void isr() {
+  #ifndef LIN_ADVANCE
+    // Disable Timer1 ISRs and enable global ISR again to capture UART events (incoming chars)
+    DISABLE_TEMPERATURE_INTERRUPT(); // Temperature ISR
+    DISABLE_STEPPER_DRIVER_INTERRUPT();
+    sei();
+  #endif
+
   //WRITE_NC(LOGIC_ANALYZER_CH0, true);
 
 	//if (UVLO) uvlo();
@@ -850,9 +861,10 @@ FORCE_INLINE void isr() {
         }
     }
 
-    // Check for serial chars. This executes roughtly inbetween 50-60% of the total runtime of the
-    // entire isr, making this spot a much better choice than checking during esteps
-    MSerial.checkRx();
+    // Check for serial chars. This executes roughtly between 50-60% of the total length of the isr,
+    // making this spot a much better choice than checking during esteps
+    // *** Not needed - ints are enabled here
+    //MSerial.checkRx();
 #endif
 
     // If current block is finished, reset pointer
@@ -921,6 +933,11 @@ FORCE_INLINE void advance_isr_scheduler() {
         nextMainISR -= OCR1A;
     else
         nextMainISR = 0;
+
+    // Disable Timer1 ISRs and enable global ISR again to capture UART events (incoming chars)
+    DISABLE_TEMPERATURE_INTERRUPT(); // Temperature ISR
+    DISABLE_STEPPER_DRIVER_INTERRUPT();
+    sei();
 
     // Run main stepping ISR if flagged
     if (!nextMainISR)
