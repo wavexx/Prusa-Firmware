@@ -11039,11 +11039,23 @@ float temp_comp_interpolation(float inp_temperature) {
 }
 
 #ifdef PINDA_THERMISTOR
-float temp_compensation_pinda_thermistor_offset(float temperature_pinda)
+float temp_compensation_pinda_thermistor_offset(uint8_t extruder)
 {
 	if (!eeprom_read_byte((unsigned char *)EEPROM_TEMP_CAL_ACTIVE)) return 0;
-	if (!calibration_status_pinda()) return 0;
-	return temp_comp_interpolation(temperature_pinda) / cs.axis_steps_per_unit[Z_AXIS];
+
+	float z_shift_mm = 0;
+    float deg_hotend = degHotend(extruder);
+    float deg_pinda = current_temperature_pinda;
+    float cal_coeff = 0.032375;
+
+    if (deg_hotend > 10 && deg_pinda > 10) {
+        z_shift_mm = deg_hotend / deg_pinda * cal_coeff;
+	}
+	else {
+		// compensation is disabled
+	}
+
+	return z_shift_mm;
 }
 #endif //PINDA_THERMISTOR
 
