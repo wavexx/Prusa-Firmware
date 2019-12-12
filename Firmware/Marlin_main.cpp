@@ -11045,17 +11045,15 @@ float temp_compensation_pinda_offset(uint8_t extruder)
 
 	float z_shift_mm = 0;
     float deg_hotend = degHotend(extruder);
-    float deg_pinda = current_temperature_pinda;
-    float cal_coeff = 0.032375;
+    float deg_pinda  = current_temperature_pinda;
+    float cal_coeff  = 0.032375;
+    float cal_zero   = 210 / 30 * cal_coeff;
 
     if (deg_hotend > 10 && deg_pinda > 10) {
         z_shift_mm = deg_hotend / deg_pinda * cal_coeff;
 	}
-	else {
-		// compensation is disabled
-	}
 
-	return z_shift_mm;
+	return z_shift_mm - cal_zero;
 }
 #endif //PINDA_THERMISTOR
 
