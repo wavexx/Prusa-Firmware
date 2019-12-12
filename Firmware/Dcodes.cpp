@@ -470,7 +470,7 @@ void dcode_8()
 	puts_P(PSTR("D8 - Read/Write PINDA"));
 	uint8_t cal_status = calibration_status_pinda();
 	float temp_pinda = current_temperature_pinda;
-	float offset_z = temp_compensation_pinda_thermistor_offset(temp_pinda);
+	float offset_z = temp_compensation_pinda_offset(active_extruder);
 	if ((strchr_pointer[1+1] == '?') || (strchr_pointer[1+1] == 0))
 	{
 		printf_P(PSTR("cal_status=%d\n"), cal_status?1:0);
@@ -497,7 +497,7 @@ void dcode_8()
 	{
 		if (code_seen('P')) // Pinda temperature [C]
 			temp_pinda = code_value();
-		offset_z = temp_compensation_pinda_thermistor_offset(temp_pinda);
+		offset_z = temp_compensation_pinda_offset(active_extruder);
 		if (code_seen('Z')) // Z Offset [mm]
 		{
 			offset_z = code_value();

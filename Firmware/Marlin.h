@@ -410,7 +410,7 @@ void show_fw_version_warnings();
 uint8_t check_printer_version();
 
 #ifdef PINDA_THERMISTOR
-float temp_compensation_pinda_thermistor_offset(uint8_t extruder);
+float temp_compensation_pinda_offset(uint8_t extruder);
 #endif //PINDA_THERMISTOR
 
 void serialecho_temperatures();

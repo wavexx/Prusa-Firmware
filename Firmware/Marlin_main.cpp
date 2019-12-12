@@ -3281,7 +3281,7 @@ static void gcode_G80()
         float offset_z = 0;
 
 #ifdef PINDA_THERMISTOR
-        offset_z = temp_compensation_pinda_thermistor_offset(current_temperature_pinda);
+        offset_z = temp_compensation_pinda_offset(active_extruder);
 #endif //PINDA_THERMISTOR
         //			#ifdef SUPPORT_VERBOSITY
         /*			if (verbosity_level >= 1)
@@ -11039,7 +11039,7 @@ float temp_comp_interpolation(float inp_temperature) {
 }
 
 #ifdef PINDA_THERMISTOR
-float temp_compensation_pinda_thermistor_offset(uint8_t extruder)
+float temp_compensation_pinda_offset(uint8_t extruder)
 {
 	if (!eeprom_read_byte((unsigned char *)EEPROM_TEMP_CAL_ACTIVE)) return 0;
 
