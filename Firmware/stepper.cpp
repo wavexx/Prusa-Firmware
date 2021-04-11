@@ -133,7 +133,7 @@ static uint8_t  step_loops;
 static uint16_t OCR1A_nominal;
 static uint8_t  step_loops_nominal;
 
-volatile long endstops_trigsteps[3]={0,0,0};
+volatile Guard<long, 3> endstops_trigsteps={0,0,0};
 volatile long endstops_stepsTotal,endstops_stepsDone;
 static volatile bool endstop_x_hit=false;
 static volatile bool endstop_y_hit=false;
@@ -142,9 +142,9 @@ static volatile bool endstop_z_hit=false;
 bool abort_on_endstop_hit = false;
 #endif
 #ifdef MOTOR_CURRENT_PWM_XY_PIN
-  int motor_current_setting[3] = DEFAULT_PWM_MOTOR_CURRENT;
-  int motor_current_setting_silent[3] = DEFAULT_PWM_MOTOR_CURRENT;
-  int motor_current_setting_loud[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
+  Guard<int, 3> motor_current_setting= DEFAULT_PWM_MOTOR_CURRENT;
+  Guard<int, 3> motor_current_setting_silent= DEFAULT_PWM_MOTOR_CURRENT;
+  Guard<int, 3> motor_current_setting_loud= DEFAULT_PWM_MOTOR_CURRENT_LOUD;
 #endif
 
 #if ( (defined(X_MAX_PIN) && (X_MAX_PIN > -1)) || defined(TMC2130_SG_HOMING) ) && !defined(DEBUG_DISABLE_XMAXLIMIT)
@@ -164,8 +164,8 @@ static bool check_endstops = true;
 static bool check_z_endstop = false;
 static bool z_endstop_invert = false;
 
-volatile long count_position[NUM_AXIS] = { 0, 0, 0, 0};
-volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
+volatile Guard<long, NUM_AXIS> count_position({ 0, 0, 0, 0});
+volatile Guard<signed char, NUM_AXIS> count_direction({ 1, 1, 1, 1});
 
 #ifdef LIN_ADVANCE
   void advance_isr_scheduler();

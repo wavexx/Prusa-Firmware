@@ -1090,8 +1090,8 @@ void extr_unload_view()
 void extr_unload()
 { //unload just current filament for multimaterial printers
 #ifdef SNMM
-	float tmp_motor[3] = DEFAULT_PWM_MOTOR_CURRENT;
-	float tmp_motor_loud[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
+	Guard<float, 3> tmp_motor= DEFAULT_PWM_MOTOR_CURRENT;
+	Guard<float, 3> tmp_motor_loud= DEFAULT_PWM_MOTOR_CURRENT_LOUD;
 	uint8_t SilentMode = eeprom_read_byte((uint8_t*)EEPROM_SILENT);
 #endif
 

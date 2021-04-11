@@ -429,7 +429,7 @@ bool SdBaseFile::make83Name(const char* str, uint8_t* name, const char** ptr) {
  * directory, \a path is invalid or already exists in \a parent.
  */
 bool SdBaseFile::mkdir(SdBaseFile* parent, const char* path, bool pFlag) {
-  uint8_t dname[11];
+  Guard<uint8_t, 11> dname;
   SdBaseFile dir1, dir2;
   SdBaseFile* sub = &dir1;
   SdBaseFile* start = parent;
@@ -462,7 +462,7 @@ bool SdBaseFile::mkdir(SdBaseFile* parent, const char* path, bool pFlag) {
   return false;
 }
 //------------------------------------------------------------------------------
-bool SdBaseFile::mkdir(SdBaseFile* parent, const uint8_t dname[11]) {
+bool SdBaseFile::mkdir(SdBaseFile* parent, const Guard<uint8_t, 11> dname) {
   uint32_t block;
   dir_t d;
   dir_t* p;
@@ -585,7 +585,7 @@ bool SdBaseFile::open(const char* path, uint8_t oflag) {
  * or can't be opened in the access mode specified by oflag.
  */
 bool SdBaseFile::open(SdBaseFile* dirFile, const char* path, uint8_t oflag) {
-  uint8_t dname[11];
+  Guard<uint8_t, 11> dname;
   SdBaseFile dir1, dir2;
   SdBaseFile *parent = dirFile;
   SdBaseFile *sub = &dir1;
@@ -619,7 +619,7 @@ bool SdBaseFile::open(SdBaseFile* dirFile, const char* path, uint8_t oflag) {
 //------------------------------------------------------------------------------
 // open with filename in dname
 bool SdBaseFile::open(SdBaseFile* dirFile,
-  const uint8_t dname[11], uint8_t oflag) {
+  const Guard<uint8_t, 11> dname, uint8_t oflag) {
   bool emptyFound = false;
   bool fileFound = false;
   uint8_t index;
@@ -1015,7 +1015,7 @@ void SdBaseFile::printFatTime( uint16_t fatTime) {
  * the value zero, false, is returned for failure.
  */
 bool SdBaseFile::printName() {
-  char name[13];
+  Guard<char, 13> name;
   if (!getFilename(name)) return false;
   MYSERIAL.print(name);
   return true;

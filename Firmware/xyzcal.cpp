@@ -280,7 +280,7 @@ bool xyzcal_spiral2(int16_t cx, int16_t cy, int16_t z0, int16_t dz, int16_t radi
     //@size=214
 	DBG(_n("xyzcal_spiral2 cx=%d cy=%d z0=%d dz=%d radius=%d ad=%d\n"), cx, cy, z0, dz, radius, ad);
 	// lcd_set_cursor(0, 4);
-	// char text[10];
+	// Guard<char, 10> text;
 	// snprintf(text, 10, "%4d", z0);
 	// lcd_print(text);
 
@@ -552,7 +552,7 @@ void xyzcal_scan_pixels_32x32_Zhop(int16_t cx, int16_t cy, int16_t min_z, int16_
 	if (!pixels)
 		return;
 	int16_t z_trig;
-	uint16_t line_buffer[32];
+	Guard<uint16_t, 32> line_buffer;
 	uint16_t current_delay_us = MAX_DELAY; ///< defines current speed
 	int16_t start_z;
 	uint16_t steps_to_go;
@@ -828,9 +828,9 @@ void dynamic_circle(uint8_t *matrix_32x32, float &x, float &y, float &r, uint8_t
 	const float pi_2_div_num_points = 2 * M_PI / num_points;
 	const constexpr uint8_t target_z = 32; ///< target z height of the circle
 	const uint8_t blocks = num_points;
-	float shifts_x[blocks];
-	float shifts_y[blocks];	
-	float shifts_r[blocks];	
+	Guard<float, blocks> shifts_x;
+	Guard<float, blocks> shifts_y;	
+	Guard<float, blocks> shifts_r;	
 
 	// DBG(_n(" [%f, %f][%f] start circle\n"), x, y, r);
 
@@ -944,7 +944,7 @@ BedSkewOffsetDetectionResultType xyzcal_scan_and_process(){
 	int16_t y = _Y;
 	const int16_t z = _Z;
 
-	uint8_t *matrix32 = (uint8_t *)block_buffer;
+	uint8_t *matrix32 = (uint8_t *)block_buffer.get();
 	uint16_t *pattern08 = (uint16_t *)(matrix32 + 32 * 32);
 	uint16_t *pattern10 = (uint16_t *)(pattern08 + 12);
 

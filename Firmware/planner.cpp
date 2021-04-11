@@ -78,7 +78,7 @@ float* max_feedrate = cs.max_feedrate_normal;
 
 // Use M201 to override by software
 unsigned long* max_acceleration_units_per_sq_second = cs.max_acceleration_units_per_sq_second_normal;
-unsigned long axis_steps_per_sqr_second[NUM_AXIS];
+Guard<unsigned long, NUM_AXIS> axis_steps_per_sqr_second;
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 // this holds the required transform to compensate for bed level
@@ -90,8 +90,8 @@ matrix_3x3 plan_bed_level_matrix = {
 #endif // #ifdef ENABLE_AUTO_BED_LEVELING
 
 // The current position of the tool in absolute steps
-long position[NUM_AXIS];   //rescaled from extern when axis_steps_per_unit are changed by gcode
-static float previous_speed[NUM_AXIS]; // Speed of previous path line segment
+Guard<long, NUM_AXIS> position;   //rescaled from extern when axis_steps_per_unit are changed by gcode
+static Guard<float, NUM_AXIS> previous_speed; // Speed of previous path line segment
 static float previous_nominal_speed; // Nominal speed of previous path line segment
 static float previous_safe_speed; // Exit speed limited by a jerk to full halt of a previous last segment.
 
@@ -104,12 +104,12 @@ float autotemp_factor=0.1;
 bool autotemp_enabled=false;
 #endif
 
-unsigned char g_uc_extruder_last_move[3] = {0,0,0};
+Guard<unsigned char, 3> g_uc_extruder_last_move= {0,0,0};
 
 //===========================================================================
 //=================semi-private variables, used in inline  functions    =====
 //===========================================================================
-block_t block_buffer[BLOCK_BUFFER_SIZE];            // A ring buffer for motion instfructions
+Guard<block_t, BLOCK_BUFFER_SIZE> block_buffer;            // A ring buffer for motion instfructions
 volatile unsigned char block_buffer_head;           // Index of the next block to be pushed
 volatile unsigned char block_buffer_tail;           // Index of the block to process now
 
@@ -127,7 +127,7 @@ float extrude_min_temp=EXTRUDE_MINTEMP;
 
 #ifdef LIN_ADVANCE
 float extruder_advance_K = LA_K_DEF;
-float position_float[NUM_AXIS];
+Guard<float, NUM_AXIS> position_float;
 #endif
 
 // Request the next block to start at zero E count
@@ -455,9 +455,9 @@ void planner_recalculate(const float &safe_final_speed)
 void plan_init() {
   block_buffer_head = 0;
   block_buffer_tail = 0;
-  memset(position, 0, sizeof(position)); // clear position
+  memset(position, 0, position.size()); // clear position
   #ifdef LIN_ADVANCE
-  memset(position_float, 0, sizeof(position_float)); // clear position
+  memset(position_float, 0, position_float.size()); // clear position
   #endif
   previous_speed[0] = 0.0;
   previous_speed[1] = 0.0;
@@ -648,12 +648,13 @@ void planner_abort_hard()
             current_position[Z_AXIS] -= mbl.get_z(current_position[X_AXIS], current_position[Y_AXIS]);
         else {
             float t = float(step_events_completed) / float(current_block->step_event_count);
-            float vec[3] = { 
+            Guard<float, 3> vec= { 
               current_block->steps_x / cs.axis_steps_per_unit[X_AXIS],
               current_block->steps_y / cs.axis_steps_per_unit[Y_AXIS],
               current_block->steps_z / cs.axis_steps_per_unit[Z_AXIS]
             };
-            float pos1[3], pos2[3];
+            Guard<float, 3> pos1;
+            Guard<float, 3> pos2;
             for (int8_t i = 0; i < 3; ++ i) {
               if (current_block->direction_bits & (1<<i))
                 vec[i] = - vec[i];
@@ -822,7 +823,7 @@ void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps
   //this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
-  long target[4];
+  Guard<long, 4> target;
   target[X_AXIS] = lround(x*cs.axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y*cs.axis_steps_per_unit[Y_AXIS]);
 #ifdef MESH_BED_LEVELING
@@ -994,11 +995,11 @@ So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real d
 Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
 */ 
   #ifndef COREXY
-    float delta_mm[4];
+    Guard<float, 4> delta_mm;
     delta_mm[X_AXIS] = (target[X_AXIS]-position[X_AXIS])/cs.axis_steps_per_unit[X_AXIS];
     delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/cs.axis_steps_per_unit[Y_AXIS];
   #else
-    float delta_mm[6];
+    Guard<float, 6> delta_mm;
     delta_mm[X_HEAD] = (target[X_AXIS]-position[X_AXIS])/cs.axis_steps_per_unit[X_AXIS];
     delta_mm[Y_HEAD] = (target[Y_AXIS]-position[Y_AXIS])/cs.axis_steps_per_unit[Y_AXIS];
     delta_mm[X_AXIS] = ((target[X_AXIS]-position[X_AXIS]) + (target[Y_AXIS]-position[Y_AXIS]))/cs.axis_steps_per_unit[X_AXIS];
@@ -1042,7 +1043,7 @@ Having the real displacement of the head, we can calculate the total movement le
   block->nominal_rate = ceil(block->step_event_count.wide * inverse_second); // (step/sec) Always > 0
 
   // Calculate and limit speed in mm/sec for each axis
-  float current_speed[4];
+  Guard<float, 4> current_speed;
   float speed_factor = 1.0; //factor <=1 do decrease speed
 //  maxlimit_status &= ~0xf;
   for(int i=0; i < 4; i++)

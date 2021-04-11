@@ -253,7 +253,7 @@ static bool is_uninitialized(void* addr, uint8_t len)
 bool Config_RetrieveSettings()
 {
 	bool previous_settings_retrieved = true;
-    char ver[4]=EEPROM_VERSION;
+    Guard<char, 4> ver=EEPROM_VERSION;
     EEPROM_readData(reinterpret_cast<uint8_t*>(EEPROM_M500_base->version), reinterpret_cast<uint8_t*>(cs.version), sizeof(cs.version), "cs.version"); //read stored version
     //  SERIAL_ECHOLN("Version: [" << ver << "] Stored version: [" << cs.version << "]");
     if (strncmp(ver,cs.version,3) == 0)  // version number match

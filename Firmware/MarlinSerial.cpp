@@ -31,7 +31,7 @@ uint8_t selectedSerialPort = 0;
 #if defined(UBRRH) || defined(UBRR0H) || defined(UBRR1H) || defined(UBRR2H) || defined(UBRR3H)
 
 #if UART_PRESENT(SERIAL_PORT)
-  ring_buffer rx_buffer  =  { { 0 }, 0, 0 };
+  ring_buffer rx_buffer  =  { { }, 0, 0 };
 #endif
 
 FORCE_INLINE void store_char(unsigned char c)
@@ -317,7 +317,7 @@ void MarlinSerial::println(double n, int digits)
 
 void MarlinSerial::printNumber(unsigned long n, uint8_t base)
 {
-  unsigned char buf[8 * sizeof(long)]; // Assumes 8-bit chars. 
+  Guard<unsigned char, 8 * sizeof(long)> buf; // Assumes 8-bit chars. 
   unsigned long i = 0;
 
   if (n == 0) {

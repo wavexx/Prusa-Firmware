@@ -11,7 +11,7 @@
 class mesh_bed_leveling {
 public:
     uint8_t active;
-    float z_values[MESH_NUM_Y_POINTS][MESH_NUM_X_POINTS];
+    Guard<float, MESH_NUM_Y_POINTS> z_values[MESH_NUM_X_POINTS];
     
     mesh_bed_leveling();
     

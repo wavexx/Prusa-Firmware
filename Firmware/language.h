@@ -115,7 +115,7 @@ extern "C" {
 extern uint8_t lang_selected;
 
 #if (LANG_MODE != 0)
-extern const char _SEC_LANG[LANG_SIZE_RESERVED];
+extern const Guard<char, LANG_SIZE_RESERVED> _SEC_LANG;
 extern const char* lang_get_translation(const char* s);
 /** @def _SEC_LANG_TABLE
  *  @brief Align table to start of 256 byte page */

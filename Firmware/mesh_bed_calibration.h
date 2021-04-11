@@ -43,10 +43,10 @@ extern uint8_t world2machine_correction_mode;
 // 2x2 transformation matrix from the world coordinates to the machine coordinates.
 // Corrects for the rotation and skew of the machine axes.
 // Used by the planner's plan_buffer_line() and plan_set_position().
-extern float world2machine_rotation_and_skew[2][2];
-extern float world2machine_rotation_and_skew_inv[2][2];
+extern Guard<float, 2> world2machine_rotation_and_skew[2];
+extern Guard<float, 2> world2machine_rotation_and_skew_inv[2];
 // Shift of the machine zero point, in the machine coordinates.
-extern float world2machine_shift[2];
+extern Guard<float, 2> world2machine_shift;
 
 extern void world2machine_reset();
 extern void world2machine_revert_to_uncorrected();
@@ -200,7 +200,7 @@ extern void babystep_undo();
 extern void babystep_reset();
 
 
-extern void count_xyz_details(float (&distanceMin)[2]);
+extern void count_xyz_details(float distanceMin[2]);
 extern bool sample_z();
 /*
 typedef enum

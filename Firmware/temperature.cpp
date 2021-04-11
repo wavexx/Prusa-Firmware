@@ -50,10 +50,10 @@
 //===========================================================================
 //=============================public variables============================
 //===========================================================================
-int target_temperature[EXTRUDERS] = { 0 };
+Guard<int, EXTRUDERS> target_temperature= { 0 };
 int target_temperature_bed = 0;
-int current_temperature_raw[EXTRUDERS] = { 0 };
-float current_temperature[EXTRUDERS] = { 0.0 };
+Guard<int, EXTRUDERS> current_temperature_raw= { 0 };
+Guard<float, EXTRUDERS> current_temperature= { 0.0 };
 
 #ifdef PINDA_THERMISTOR
 uint16_t current_temperature_raw_pinda =  0 ; //value with more averaging applied
@@ -102,7 +102,7 @@ float current_temperature_bed = 0.0;
 unsigned char soft_pwm_bed;
 
 #ifdef BABYSTEPPING
-  volatile int babystepsTodo[3]={0,0,0};
+  volatile Guard<int, 3> babystepsTodo={0,0,0};
 #endif
 
 //===========================================================================
@@ -112,18 +112,18 @@ static volatile bool temp_meas_ready = false;
 
 #ifdef PIDTEMP
   //static cannot be external:
-  static float iState_sum[EXTRUDERS] = { 0 };
-  static float dState_last[EXTRUDERS] = { 0 };
-  static float pTerm[EXTRUDERS];
-  static float iTerm[EXTRUDERS];
-  static float dTerm[EXTRUDERS];
+  static Guard<float, EXTRUDERS> iState_sum;
+  static Guard<float, EXTRUDERS> dState_last;
+  static Guard<float, EXTRUDERS> pTerm;
+  static Guard<float, EXTRUDERS> iTerm;
+  static Guard<float, EXTRUDERS> dTerm;
   //int output;
-  static float pid_error[EXTRUDERS];
-  static float iState_sum_min[EXTRUDERS];
-  static float iState_sum_max[EXTRUDERS];
-  // static float pid_input[EXTRUDERS];
-  // static float pid_output[EXTRUDERS];
-  static bool pid_reset[EXTRUDERS];
+  static Guard<float, EXTRUDERS> pid_error;
+  static Guard<float, EXTRUDERS> iState_sum_min;
+  static Guard<float, EXTRUDERS> iState_sum_max;
+  // static Guard<float, EXTRUDERS> pid_input;
+  // static Guard<float, EXTRUDERS> pid_output;
+  static Guard<bool, EXTRUDERS> pid_reset;
 #endif //PIDTEMP
 #ifdef PIDTEMPBED
   //static cannot be external:
@@ -139,7 +139,7 @@ static volatile bool temp_meas_ready = false;
 #else //PIDTEMPBED
 	static unsigned long  previous_millis_bed_heater;
 #endif //PIDTEMPBED
-  static unsigned char soft_pwm[EXTRUDERS];
+  static Guard<unsigned char, EXTRUDERS> soft_pwm;
 
 #ifdef FAN_SOFT_PWM
   static unsigned char soft_pwm_fan;
@@ -175,10 +175,10 @@ uint8_t fanSpeedBckp = 255;
 static ShortTimer oTimer4minTempHeater,oTimer4minTempBed;
 
 // Init min and max temp with extreme values to prevent false errors during startup
-static int minttemp_raw[EXTRUDERS] = ARRAY_BY_EXTRUDERS( HEATER_0_RAW_LO_TEMP , HEATER_1_RAW_LO_TEMP , HEATER_2_RAW_LO_TEMP );
-static int maxttemp_raw[EXTRUDERS] = ARRAY_BY_EXTRUDERS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP );
-static int minttemp[EXTRUDERS] = ARRAY_BY_EXTRUDERS( 0, 0, 0 );
-static int maxttemp[EXTRUDERS] = ARRAY_BY_EXTRUDERS( 16383, 16383, 16383 );
+static Guard<int, EXTRUDERS> minttemp_raw= ARRAY_BY_EXTRUDERS( HEATER_0_RAW_LO_TEMP , HEATER_1_RAW_LO_TEMP , HEATER_2_RAW_LO_TEMP );
+static Guard<int, EXTRUDERS> maxttemp_raw= ARRAY_BY_EXTRUDERS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP );
+static Guard<int, EXTRUDERS> minttemp= ARRAY_BY_EXTRUDERS( 0, 0, 0 );
+static Guard<int, EXTRUDERS> maxttemp= ARRAY_BY_EXTRUDERS( 16383, 16383, 16383 );
 #ifdef BED_MINTEMP
 static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP;
 #endif
@@ -193,7 +193,7 @@ static int ambient_maxttemp_raw = AMBIENT_RAW_HI_TEMP;
 #endif
 
 static void *heater_ttbl_map[EXTRUDERS] = ARRAY_BY_EXTRUDERS( (void *)HEATER_0_TEMPTABLE, (void *)HEATER_1_TEMPTABLE, (void *)HEATER_2_TEMPTABLE );
-static uint8_t heater_ttbllen_map[EXTRUDERS] = ARRAY_BY_EXTRUDERS( HEATER_0_TEMPTABLE_LEN, HEATER_1_TEMPTABLE_LEN, HEATER_2_TEMPTABLE_LEN );
+static Guard<uint8_t, EXTRUDERS> heater_ttbllen_map= ARRAY_BY_EXTRUDERS( HEATER_0_TEMPTABLE_LEN, HEATER_1_TEMPTABLE_LEN, HEATER_2_TEMPTABLE_LEN );
 
 static float analog2temp(int raw, uint8_t e);
 static float analog2tempBed(int raw);
@@ -216,10 +216,10 @@ enum TempRunawayStates
 //===========================================================================
 
 #if (defined (TEMP_RUNAWAY_BED_HYSTERESIS) && TEMP_RUNAWAY_BED_TIMEOUT > 0) || (defined (TEMP_RUNAWAY_EXTRUDER_HYSTERESIS) && TEMP_RUNAWAY_EXTRUDER_TIMEOUT > 0)
-static float temp_runaway_status[4];
-static float temp_runaway_target[4];
-static float temp_runaway_timer[4];
-static int temp_runaway_error_counter[4];
+static Guard<float, 4> temp_runaway_status;
+static Guard<float, 4> temp_runaway_target;
+static Guard<float, 4> temp_runaway_timer;
+static Guard<int, 4> temp_runaway_error_counter;
 
 static void temp_runaway_check(int _heater_id, float _target_temperature, float _current_temperature, float _output, bool _isbed);
 static void temp_runaway_stop(bool isPreheat, bool isBed);
@@ -564,7 +564,7 @@ void checkFanSpeed()
   
   if(fans_check_enabled != false)
 	  fans_check_enabled = (eeprom_read_byte((uint8_t*)EEPROM_FAN_CHECK_ENABLED) > 0);
-	static unsigned char fan_speed_errors[2] = { 0,0 };
+	static Guard<unsigned char, 2> fan_speed_errors= { 0,0 };
 #if (defined(FANCHECK) && defined(TACH_0) && (TACH_0 >-1))
 	if ((fan_speed[0] < 20) && (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE)){ fan_speed_errors[0]++;}
 	else{
@@ -1245,9 +1245,9 @@ void temp_runaway_check(int _heater_id, float _target_temperature, float _curren
 	float __hysteresis = 0;
 	int __timeout = 0;
 	bool temp_runaway_check_active = false;
-	static float __preheat_start[2] = { 0,0}; //currently just bed and one extruder
-	static int __preheat_counter[2] = { 0,0};
-	static int __preheat_errors[2] = { 0,0};
+	static Guard<float, 2> __preheat_start= { 0,0}; //currently just bed and one extruder
+	static Guard<int, 2> __preheat_counter= { 0,0};
+	static Guard<int, 2> __preheat_errors= { 0,0};
 		
 
 	if (_millis() - temp_runaway_timer[_heater_id] > 2000)
@@ -1485,7 +1485,7 @@ uint8_t last_alert_sent_to_lcd = LCDALERT_NONE;
 //! @param func optional lcd update function (lcd_setalertstatus when first setting the error)
 void temp_update_messagepgm(const char* PROGMEM type, void (*func)(const char*) = lcd_updatestatus)
 {
-    char msg[LCD_WIDTH];
+    Guard<char, LCD_WIDTH> msg;
     strcpy_P(msg, PSTR("Err: "));
     strcat_P(msg, type);
     (*func)(msg);
@@ -1672,9 +1672,6 @@ int read_max6675()
 #endif
 
 
-extern "C" {
-
-
 void adc_ready(void) //callback from adc when sampling finished
 {
 	current_temperature_raw[0] = adc_values[ADC_PIN_IDX(TEMP_0_PIN)]; //heater
@@ -1696,8 +1693,6 @@ void adc_ready(void) //callback from adc when sampling finished
 #endif //IR_SENSOR_ANALOG
 	temp_meas_ready = true;
 }
-
-} // extern "C"
 
 FORCE_INLINE static void temperature_isr()
 {

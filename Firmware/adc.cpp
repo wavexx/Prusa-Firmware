@@ -8,7 +8,7 @@
 
 uint8_t adc_state;
 uint8_t adc_count;
-uint16_t adc_values[ADC_CHAN_CNT];
+Guard<uint16_t, ADC_CHAN_CNT> adc_values;
 uint16_t adc_sim_mask;
 
 

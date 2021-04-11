@@ -68,7 +68,7 @@ union dda_usteps_t
 
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 
 // the source g-code and may never actually be reached if acceleration management is active.
-typedef struct {
+typedef struct __attribute__((packed)) {
   // Fields used by the bresenham algorithm for tracing the line
   // steps_x.y,z, step_event_count, acceleration_rate, direction_bits and active_extruder are set by plan_buffer_line().
   dda_isteps_t steps_x, steps_y, steps_z, steps_e;  // Step count along each axis
@@ -122,7 +122,7 @@ typedef struct {
 #endif
 
   // Save/recovery state data
-  float gcode_target[NUM_AXIS];     // Target (abs mm) of the original Gcode instruction
+  float gcode_target[NUM_AXIS]; // GUARD    // Target (abs mm) of the original Gcode instruction
   uint16_t gcode_feedrate;          // Default and/or move feedrate
   uint16_t sdlen;                   // Length of the Gcode instruction
 } block_t;
@@ -189,9 +189,9 @@ extern float* max_feedrate;
 
 // Use M201 to override by software
 extern unsigned long* max_acceleration_units_per_sq_second; 
-extern unsigned long axis_steps_per_sqr_second[NUM_AXIS];
+extern Guard<unsigned long, NUM_AXIS> axis_steps_per_sqr_second;
 
-extern long position[NUM_AXIS];
+extern Guard<long, NUM_AXIS> position;
 extern uint8_t maxlimit_status;
 
 
@@ -205,7 +205,7 @@ extern uint8_t maxlimit_status;
     
 
 
-extern block_t block_buffer[BLOCK_BUFFER_SIZE];            // A ring buffer for motion instfructions
+extern Guard<block_t, BLOCK_BUFFER_SIZE> block_buffer;            // A ring buffer for motion instfructions
 // Index of the next block to be pushed into the planner queue.
 extern volatile unsigned char block_buffer_head;
 // Index of the first block in the planner queue.

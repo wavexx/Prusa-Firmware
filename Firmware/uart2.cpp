@@ -5,6 +5,7 @@
 #include <avr/pgmspace.h>
 #include "rbuf.h"
 #include "macros.h"
+#include "guard.h"
 
 #define UART2_BAUD 115200
 #define UART_BAUD_SELECT(baudRate,xtalCpu) (((float)(xtalCpu))/(((float)(baudRate))*8.0)-1.0+0.5)
@@ -12,7 +13,7 @@
 #define uart2_txcomplete (UCSR2A & (1 << TXC2))
 #define uart2_txready    (UCSR2A & (1 << UDRE2))
 
-uint8_t uart2_ibuf[14] = {0, 0};
+Guard<uint8_t, 14> uart2_ibuf= {0, 0};
 
 FILE _uart2io = {0};
 

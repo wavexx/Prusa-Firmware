@@ -75,7 +75,7 @@ uint8_t lcd_displaymode = 0;
 uint8_t lcd_currline;
 
 #ifdef VT100
-uint8_t lcd_escape[8];
+Guard<uint8_t, 8> lcd_escape;
 #endif
 
 static void lcd_display(void);
@@ -581,7 +581,7 @@ void lcd_print(double n, int digits)
 
 void lcd_printNumber(unsigned long n, uint8_t base)
 {
-	unsigned char buf[8 * sizeof(long)]; // Assumes 8-bit chars. 
+	Guard<unsigned char, 8 * sizeof(long)> buf; // Assumes 8-bit chars. 
 	unsigned long i = 0;
 	if (n == 0)
 	{

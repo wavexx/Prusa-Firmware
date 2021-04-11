@@ -23,6 +23,8 @@
 #include "Timer.h"
 extern uint8_t mbl_z_probe_nr;
 
+#include "guard.h"
+
 #ifndef AT90USB
 #define  HardwareSerial_h // trick to disable the standard HWserial
 #endif
@@ -281,13 +283,13 @@ extern uint8_t axis_relative_modes;
 extern float feedrate;
 extern int feedmultiply;
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
-extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
-extern float extruder_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
-extern float current_position[NUM_AXIS] ;
-extern float destination[NUM_AXIS] ;
-extern float min_pos[3];
-extern float max_pos[3];
-extern bool axis_known_position[3];
+extern Guard<int, EXTRUDERS> extruder_multiply; // sets extrude multiply factor (in percent) for each extruder individually
+extern Guard<float, EXTRUDERS> extruder_multiplier; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
+extern Guard<float, NUM_AXIS> current_position;
+extern Guard<float, NUM_AXIS> destination;
+extern Guard<float, 3> min_pos;
+extern Guard<float, 3> max_pos;
+extern Guard<bool, 3> axis_known_position;
 extern int fanSpeed;
 extern uint8_t newFanSpeed;
 extern int8_t lcd_change_fil_state;
@@ -305,7 +307,7 @@ extern unsigned char fanSpeedSoftPwm;
 #endif
 
 #ifdef FWRETRACT
-extern bool retracted[EXTRUDERS];
+extern Guard<bool, EXTRUDERS> retracted;
 extern float retract_length_swap;
 extern float retract_recover_length_swap;
 #endif
@@ -315,7 +317,7 @@ extern uint8_t host_keepalive_interval;
 
 extern unsigned long starttime;
 extern unsigned long stoptime;
-extern int bowden_length[4];
+extern Guard<int, 4> bowden_length;
 extern bool is_usb_printing;
 extern bool homing_flag;
 extern bool loading_flag;
@@ -335,9 +337,9 @@ extern bool no_response;
 extern uint8_t important_status;
 extern uint8_t saved_filament_type;
 
-extern bool fan_state[2];
-extern int fan_edge_counter[2];
-extern int fan_speed[2];
+extern Guard<bool, 2> fan_state;
+extern Guard<int, 2> fan_edge_counter;
+extern Guard<int, 2> fan_speed;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;

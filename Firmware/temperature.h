@@ -51,10 +51,10 @@ extern bool checkAllHotends(void);
 
 // low level conversion routines
 // do not use these routines and variables outside of temperature.cpp
-extern int target_temperature[EXTRUDERS];  
-extern float current_temperature[EXTRUDERS];
+extern Guard<int, EXTRUDERS> target_temperature;  
+extern Guard<float, EXTRUDERS> current_temperature;
 #ifdef SHOW_TEMP_ADC_VALUES
-  extern int current_temperature_raw[EXTRUDERS];
+  extern Guard<int, EXTRUDERS> current_temperature_raw;
   extern int current_temperature_bed_raw;
 #endif
 extern int target_temperature_bed;
@@ -102,7 +102,7 @@ extern bool bedPWMDisabled;
 
 
 #ifdef BABYSTEPPING
-extern volatile int babystepsTodo[3];
+extern volatile Guard<int, 3> babystepsTodo;
 
 inline void babystepsTodoZadd(int n)
 {

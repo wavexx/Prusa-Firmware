@@ -44,7 +44,7 @@ struct vector_3
 
 struct matrix_3x3
 {
-	float matrix[9];
+	Guard<float, 9> matrix;
 
 	static matrix_3x3 create_from_rows(vector_3 row_0, vector_3 row_1, vector_3 row_2);
 	static matrix_3x3 create_look_at(vector_3 target);

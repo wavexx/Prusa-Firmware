@@ -98,7 +98,7 @@ static float manual_feedrate[] = MANUAL_FEEDRATE;
 /* !Configuration settings */
 
 uint8_t lcd_status_message_level;
-char lcd_status_message[LCD_WIDTH + 1] = ""; //////WELCOME!
+Guard<char, LCD_WIDTH + 1> lcd_status_message= ""; //////WELCOME!
 unsigned char firstrun = 1;
 
 static uint8_t lay1cal_filament = 0;
@@ -452,7 +452,7 @@ void lcdui_print_feedrate(void)
 void lcdui_print_percent_done(void)
 {
 	const char* src = is_usb_printing?_N("USB"):(IS_SD_PRINTING?_N(" SD"):_N("   "));
-	char per[4];
+	Guard<char, 4> per;
 	bool num = IS_SD_PRINTING || (PRINTER_ACTIVE && (print_percent_done_normal != PRINT_PERCENT_DONE_INIT));
 	if (!num || heating_status) // either not printing or heating
 	{
@@ -460,7 +460,7 @@ void lcdui_print_percent_done(void)
 		const int8_t nextSheet = eeprom_next_initialized_sheet(sheetNR);
 		if ((nextSheet >= 0) && (sheetNR != nextSheet))
 		{
-			char sheet[8];
+			Guard<char, 8> sheet;
 			eeprom_read_block(sheet, EEPROM_Sheets_base->s[sheetNR].name, 7);
 			sheet[7] = '\0';
 			lcd_printf_P(PSTR("%-7s"),sheet);
@@ -468,7 +468,7 @@ void lcdui_print_percent_done(void)
 		}
 	}
 	sprintf_P(per, num?_N("%3hhd"):_N("---"), calc_percent_done());
-	lcd_printf_P(_N("%3S%3s%%"), src, per);
+	lcd_printf_P(_N("%3S%3s%%"), src, (char*)per);
 }
 
 // Print extruder status (5 chars total)
@@ -667,9 +667,9 @@ void lcdui_print_status_line(void)
             }
             break;
         case CustomMsg::TempCal: // PINDA temp calibration in progress
-            char statusLine[LCD_WIDTH + 1];
+            Guard<char, LCD_WIDTH + 1> statusLine;
             sprintf_P(statusLine, PSTR("%-20S"), _T(MSG_TEMP_CALIBRATION));
-            char progress[4];
+            Guard<char, 4> progress;
             sprintf_P(progress, PSTR("%d/6"), custom_message_state);
             memcpy(statusLine + 12, progress, sizeof(progress) - 1);
             lcd_set_cursor(0, 3);
@@ -911,7 +911,7 @@ void lcd_commands()
 #ifdef SNMM
 	if (lcd_commands_type == LcdCommands::Layer1Cal)
 	{
-		char cmd1[30];
+		Guard<char, 30> cmd1;
 		float width = 0.4;
 		float length = 20 - width;
 		float extr = count_e(0.2, width, length);
@@ -1176,7 +1176,7 @@ void lcd_commands()
 
 	if (lcd_commands_type == LcdCommands::Layer1Cal)
 	{
-		char cmd1[30];
+		Guard<char, 30> cmd1;
 
 		if(lcd_commands_step>1) lcd_timeoutToStatus.start(); //if user dont confirm live adjust Z value by pressing the knob, we are saving last value by timeout to status screen
 
@@ -1307,7 +1307,7 @@ void lcd_commands()
 
 	}
 	if (lcd_commands_type == LcdCommands::PidExtruder) {
-		char cmd1[30];
+		Guard<char, 30> cmd1;
 		
 		if (lcd_commands_step == 0) {
 			custom_message_type = CustomMsg::PidCal;
@@ -1439,7 +1439,8 @@ void lcd_menu_extruder_info()                     // NOT static due to using ins
     lcd_timeoutToStatus.stop(); //infinite timeout
     lcd_home();
     static const size_t maxChars = 12;
-    char nozzle[maxChars], print[maxChars];
+    Guard<char, maxChars> nozzle;
+    Guard<char, maxChars> print;
     pgmtext_with_colon(_i("Nozzle FAN"), nozzle, maxChars);  ////c=10 r=1
     pgmtext_with_colon(_i("Print FAN"), print, maxChars);  ////c=10 r=1
 	lcd_printf_P(_N("%s %4d RPM\n" "%s %4d RPM\n"), nozzle, 60*fan_speed[0], print, 60*fan_speed[1] ); 
@@ -1697,7 +1698,7 @@ static void lcd_menu_debug()
 //! @param [in] value to be printed behind the label
 static void lcd_menu_temperatures_line(const char *ipgmLabel, int value){
     static const size_t maxChars = 15;    
-    char tmp[maxChars];
+    Guard<char, maxChars> tmp;
     pgmtext_with_colon(ipgmLabel, tmp, maxChars);
     lcd_printf_P(PSTR(" %s%3d\x01 \n"), tmp, value); // no need to add -14.14 to string alignment
 }
@@ -1880,7 +1881,7 @@ static void lcd_support_menu()
 		int8_t status;                 // 1byte
 		bool is_flash_air;             // 1byte
 		uint32_t ip;                   // 4bytes
-		char ip_str[IP4_STR_SIZE];     // 16bytes
+		Guard<char, IP4_STR_SIZE> ip_str;     // 16bytes
 	} _menu_data_t;
     static_assert(sizeof(menu_data)>= sizeof(_menu_data_t),"_menu_data_t doesn't fit into menu_data");
 	_menu_data_t* _md = (_menu_data_t*)&(menu_data[0]);
@@ -2748,7 +2749,7 @@ void lcd_move_e()
 //! @todo Positioning of the messages and values on LCD aren't fixed to their exact place. This causes issues with translations.
 static void lcd_menu_xyz_y_min()
 {
-	float distanceMin[2];
+	Guard<float, 2> distanceMin;
     count_xyz_details(distanceMin);
 	lcd_home();
 	lcd_printf_P(_N(
@@ -2833,9 +2834,9 @@ static void lcd_menu_xyz_offset()
     lcd_puts_at_P(0, 2, PSTR("X"));  ////c=10 r=1
     lcd_puts_at_P(0, 3, PSTR("Y"));  ////c=10 r=1
 
-    float vec_x[2];
-    float vec_y[2];
-    float cntr[2];
+    Guard<float, 2> vec_x;
+    Guard<float, 2> vec_y;
+    Guard<float, 2> cntr;
     world2machine_read_valid(vec_x, vec_y, cntr);
 
     for (uint_least8_t i = 0; i < 2; i++)
@@ -4607,7 +4608,7 @@ void lcd_first_layer_calibration_reset()
         lcd_encoder = 0;
     }
 
-    char sheet_name[sizeof(Sheet::name)];
+    Guard<char, sizeof(Sheet::name)> sheet_name;
     eeprom_read_block(sheet_name, &EEPROM_Sheets_base->s[(eeprom_read_byte(&(EEPROM_Sheets_base->active_sheet)))].name, sizeof(Sheet::name));
     lcd_set_cursor(0, 0);
     float offset = static_cast<int16_t>(eeprom_read_word(reinterpret_cast<uint16_t*>(&EEPROM_Sheets_base->s[(eeprom_read_byte(&(EEPROM_Sheets_base->active_sheet)))].z_offset)))/cs.axis_steps_per_unit[Z_AXIS];
@@ -6417,7 +6418,7 @@ static void lcd_rename_sheet_menu()
     {
         bool initialized;
         uint8_t selected;
-        char name[sizeof(Sheet::name)];
+        Guard<char, sizeof(Sheet::name)> name;
     };
     static_assert(sizeof(menu_data)>= sizeof(MenuData),"MenuData doesn't fit into menu_data");
     MenuData* menuData = (MenuData*)&(menu_data[0]);
@@ -6692,7 +6693,7 @@ uint16_t stepper_timer_overflow_max = 0;
 uint16_t stepper_timer_overflow_last = 0;
 uint16_t stepper_timer_overflow_cnt = 0;
 void stepper_timer_overflow() {
-  char msg[28];
+  Guard<char, 28> msg;
   sprintf_P(msg, PSTR("#%d %d max %d"), ++ stepper_timer_overflow_cnt, stepper_timer_overflow_last >> 1, stepper_timer_overflow_max >> 1);
   lcd_setstatus(msg);
   stepper_timer_overflow_state = false;
@@ -6906,7 +6907,7 @@ static void lcd_mesh_bed_leveling_settings()
 	
 	bool magnet_elimination = (eeprom_read_byte((uint8_t*)EEPROM_MBL_MAGNET_ELIMINATION) > 0);
 	uint8_t points_nr = eeprom_read_byte((uint8_t*)EEPROM_MBL_POINTS_NR);
-	char sToggle[4]; //enough for nxn format
+	Guard<char, 4> sToggle; //enough for nxn format
 
 	MENU_BEGIN();
 	MENU_ITEM_BACK_P(_T(MSG_SETTINGS));
@@ -7640,7 +7641,7 @@ static void reset_crash_det(unsigned char axis) {
 static bool lcd_selfcheck_axis_sg(unsigned char axis) {
 // each axis length is measured twice	
 	float axis_length, current_position_init, current_position_final;
-	float measured_axis_length[2];
+	Guard<float, 2> measured_axis_length;
 	float margin = 60;
 	float max_error_mm = 5;
 	switch (axis) {
@@ -7861,8 +7862,8 @@ static bool lcd_selfcheck_axis(int _axis, int _travel)
 
 static bool lcd_selfcheck_pulleys(int axis)
 {
-	float tmp_motor_loud[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
-	float tmp_motor[3] = DEFAULT_PWM_MOTOR_CURRENT;
+	Guard<float, 3> tmp_motor_loud= DEFAULT_PWM_MOTOR_CURRENT_LOUD;
+	Guard<float, 3> tmp_motor= DEFAULT_PWM_MOTOR_CURRENT;
 	float current_position_init;
 	float move;
 	bool endstop_triggered = false;
@@ -7956,7 +7957,7 @@ static bool lcd_selfcheck_endstops()
 		((READ(Z_MIN_PIN) ^ Z_MIN_ENDSTOP_INVERTING) == 1))
 	{
 		_result = false;
-		char _error[4] = "";
+		Guard<char, 4> _error= "";
 	#ifndef TMC2130
 		if ((READ(X_MIN_PIN) ^ X_MIN_ENDSTOP_INVERTING) == 1) strcat(_error, "X");
 		if ((READ(Y_MIN_PIN) ^ Y_MIN_ENDSTOP_INVERTING) == 1) strcat(_error, "Y");
@@ -8534,14 +8535,14 @@ static bool check_file(const char* filename) {
 static void menu_action_sdfile(const char* filename)
 {
   loading_flag = false;
-  char cmd[30];
+  Guard<char, 30> cmd;
   char* c;
   bool result = true;
   sprintf_P(cmd, PSTR("M23 %s"), filename);
   for (c = &cmd[4]; *c; c++)
     *c = tolower(*c);
 
-  const char end[5] = ".gco";
+  const Guard<char, 5> end= ".gco";
 
   //we are storing just first 8 characters of 8.3 filename assuming that extension is always ".gco"
   for (uint_least8_t i = 0; i < 8; i++) {

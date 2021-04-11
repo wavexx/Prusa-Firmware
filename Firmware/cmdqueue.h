@@ -31,7 +31,7 @@
 // Maximum 5 commands of max length 20 + null terminator.
 #define CMDBUFFER_RESERVE_FRONT       (5*21)
 
-extern char cmdbuffer[BUFSIZE * (MAX_CMD_SIZE + 1) + CMDBUFFER_RESERVE_FRONT];
+extern Guard<char, BUFSIZE * (MAX_CMD_SIZE + 1) + CMDBUFFER_RESERVE_FRONT> cmdbuffer;
 extern size_t bufindr;
 extern int buflen;
 extern bool cmdbuffer_front_already_processed;

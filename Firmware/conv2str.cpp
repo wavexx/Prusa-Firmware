@@ -2,10 +2,11 @@
 
 #include "conv2str.h"
 #include <stdlib.h>
+#include "guard.h"
 
 
 //  convert float to string with +123.4 format
-char conv[8];
+Guard<char, 8> conv;
 
 char *ftostr3(const float &x)
 {

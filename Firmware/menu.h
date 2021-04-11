@@ -4,6 +4,7 @@
 
 #include <inttypes.h>
 #include "eeprom.h"
+#include "guard.h"
 
 #define MENU_DATA_SIZE      32
 
@@ -25,7 +26,7 @@ typedef struct
     int32_t maxEditValue;
 } menu_data_edit_t;
 
-extern uint8_t menu_data[MENU_DATA_SIZE];
+extern Guard<uint8_t, MENU_DATA_SIZE> menu_data;
 
 extern uint8_t menu_depth;
 
@@ -139,7 +140,7 @@ extern void menu_draw_float13(const char* str, float val);
 
 struct SheetFormatBuffer
 {
-    char c[19];
+    Guard<char, 19> c;
 };
 
 extern void menu_format_sheet_E(const Sheet &sheet_E, SheetFormatBuffer &buffer);

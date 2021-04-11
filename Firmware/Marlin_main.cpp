@@ -179,7 +179,7 @@ uint8_t axis_relative_modes = 0;
 
 int feedmultiply=100; //100->1 200->2
 int extrudemultiply=100; //100->1 200->2
-int extruder_multiply[EXTRUDERS] = {100
+Guard<int, EXTRUDERS> extruder_multiply= {100
   #if EXTRUDERS > 1
     , 100
     #if EXTRUDERS > 2
@@ -188,7 +188,7 @@ int extruder_multiply[EXTRUDERS] = {100
   #endif
 };
 
-int bowden_length[4] = {385, 385, 385, 385};
+Guard<int, 4> bowden_length= {385, 385, 385, 385};
 
 bool is_usb_printing = false;
 bool homing_flag = false;
@@ -224,12 +224,12 @@ bool loading_flag = false;
 char snmm_filaments_used = 0;
 
 
-bool fan_state[2];
-int fan_edge_counter[2];
-int fan_speed[2];
+Guard<bool, 2> fan_state;
+Guard<int, 2> fan_edge_counter;
+Guard<int, 2> fan_speed;
 
 
-float extruder_multiplier[EXTRUDERS] = {1.0
+Guard<float, EXTRUDERS> extruder_multiplier= {1.0
   #if EXTRUDERS > 1
     , 1.0
     #if EXTRUDERS > 2
@@ -238,21 +238,21 @@ float extruder_multiplier[EXTRUDERS] = {1.0
   #endif
 };
 
-float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
+Guard<float, NUM_AXIS> current_position= { 0.0, 0.0, 0.0, 0.0 };
 //shortcuts for more readable code
 #define _x current_position[X_AXIS]
 #define _y current_position[Y_AXIS]
 #define _z current_position[Z_AXIS]
 #define _e current_position[E_AXIS]
 
-float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
-float max_pos[3] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
-bool axis_known_position[3] = {false, false, false};
+Guard<float, 3> min_pos= { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
+Guard<float, 3> max_pos= { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
+Guard<bool, 3> axis_known_position= {false, false, false};
 
 // Extruder offset
 #if EXTRUDERS > 1
   #define NUM_EXTRUDER_OFFSETS 2 // only in XY plane
-float extruder_offset[NUM_EXTRUDER_OFFSETS][EXTRUDERS] = {
+Guard<float, NUM_EXTRUDER_OFFSETS> extruder_offset[EXTRUDERS] = {
 #if defined(EXTRUDER_OFFSET_X) && defined(EXTRUDER_OFFSET_Y)
   EXTRUDER_OFFSET_X, EXTRUDER_OFFSET_Y
 #endif
@@ -264,7 +264,7 @@ int fanSpeed=0;
 uint8_t newFanSpeed = 0;
 
 #ifdef FWRETRACT
-  bool retracted[EXTRUDERS]={false
+  Guard<bool, EXTRUDERS> retracted={false
     #if EXTRUDERS > 1
     , false
      #if EXTRUDERS > 2
@@ -272,7 +272,7 @@ uint8_t newFanSpeed = 0;
      #endif
   #endif
   };
-  bool retracted_swap[EXTRUDERS]={false
+  Guard<bool, EXTRUDERS> retracted_swap={false
     #if EXTRUDERS > 1
     , false
      #if EXTRUDERS > 2
@@ -311,7 +311,7 @@ uint8_t saved_filament_type;
 #define Y_COORD_INVALID (Y_MIN_POS-1)
 
 #define SAVED_TARGET_UNSET X_COORD_INVALID
-float saved_target[NUM_AXIS] = {SAVED_TARGET_UNSET, 0, 0, 0};
+Guard<float, NUM_AXIS> saved_target= {SAVED_TARGET_UNSET, 0, 0, 0};
 
 // save/restore printing in case that mmu was not responding 
 bool mmu_print_saved = false;
@@ -331,11 +331,11 @@ uint32_t IP_address = 0;
 //===========================================================================
 #define MSG_BED_LEVELING_FAILED_TIMEOUT 30
 
-const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
-float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
+const Guard<char, NUM_AXIS> axis_codes= {'X', 'Y', 'Z', 'E'};
+Guard<float, NUM_AXIS> destination= {  0.0, 0.0, 0.0, 0.0};
 
 // For tracing an arc
-static float offset[3] = {0.0, 0.0, 0.0};
+static Guard<float, 3> offset= {0.0, 0.0, 0.0};
 
 // Current feedrate
 float feedrate = 1500.0;
@@ -380,7 +380,7 @@ boolean chdkActive = false;
 bool saved_printing = false; //!< Print is paused and saved in RAM
 static uint32_t saved_sdpos = 0; //!< SD card position, or line number in case of USB printing
 uint8_t saved_printing_type = PRINTING_TYPE_SD;
-static float saved_pos[4] = { X_COORD_INVALID, 0, 0, 0 };
+static Guard<float, 4> saved_pos= { X_COORD_INVALID, 0, 0, 0 };
 static uint16_t saved_feedrate2 = 0; //!< Default feedrate (truncated from float)
 static int saved_feedmultiply2 = 0;
 static uint8_t saved_active_extruder = 0;
@@ -979,7 +979,7 @@ uint8_t lang_xflash_enum_codes(uint16_t* codes)
 
 void list_sec_lang_from_external_flash()
 {
-	uint16_t codes[8];
+	Guard<uint16_t, 8> codes;
 	uint8_t count = lang_xflash_enum_codes(codes);
 	printf_P(_n("XFlash lang count = %hhd\n"), count);
 }
@@ -1072,7 +1072,7 @@ void setup()
     //SN is valid only if it is NULL terminated. Any other character means either uninitialized or corrupted
     if (eeprom_read_byte((uint8_t*)EEPROM_PRUSA_SN + 19))
     {
-        char SN[20];
+        Guard<char, 20> SN;
         if (get_PRUSA_SN(SN))
         {
             eeprom_update_block(SN, (uint8_t*)EEPROM_PRUSA_SN, 20);
@@ -1452,7 +1452,7 @@ void setup()
 
 #ifdef DEBUG_XFLASH
 	XFLASH_SPI_ENTER();
-	uint8_t uid[8]; // 64bit unique id
+	Guard<uint8_t, 8> uid; // 64bit unique id
 	xflash_rd_uid(uid);
 	puts_P(_n("XFLASH UID="));
 	for (uint8_t i = 0; i < 8; i ++)
@@ -1657,7 +1657,7 @@ void trace();
 
 #define CHUNK_SIZE 64 // bytes
 #define SAFETY_MARGIN 1
-char chunk[CHUNK_SIZE+SAFETY_MARGIN];
+Guard<char, CHUNK_SIZE+SAFETY_MARGIN> chunk;
 int chunkHead = 0;
 
 void serial_read_stream() {
@@ -1672,7 +1672,7 @@ void serial_read_stream() {
     uint32_t bytesToReceive;
 
     // receive the four bytes
-    char bytesToReceiveBuffer[4];
+    Guard<char, 4> bytesToReceiveBuffer;
     for (int i=0; i<4; i++) {
         int data;
         while ((data = MYSERIAL.read()) == -1) {};
@@ -2458,7 +2458,7 @@ void trace() {
 }
 /*
 void ramming() {
-//	  float tmp[4] = DEFAULT_MAX_FEEDRATE;
+//	  Guard<float, 4> tmp= DEFAULT_MAX_FEEDRATE;
 	if (current_temperature[0] < 230) {
 		//PLA
 
@@ -3243,7 +3243,7 @@ static void gcode_G80()
 #endif // SUPPORT_VERBOSITY
 
     for (uint8_t i = 0; i < 4; ++i) {
-        unsigned char codes[4] = { 'L', 'R', 'F', 'B' };
+        Guard<unsigned char, 4> codes= { 'L', 'R', 'F', 'B' };
         long correction = 0;
         if (code_seen(codes[i]))
             correction = code_value_long();
@@ -3634,7 +3634,7 @@ static T gcode_M600_filament_change_z_shift()
 static void gcode_M600(bool automatic, float x_position, float y_position, float z_shift, float e_shift, float /*e_shift_late*/)
 {
     st_synchronize();
-    float lastpos[4];
+    Guard<float, 4> lastpos;
 
     if (farm_mode)
     {
@@ -3744,7 +3744,7 @@ static void gcode_M600(bool automatic, float x_position, float y_position, float
 
     //Recover feed rate
     feedmultiply = feedmultiplyBckp;
-    char cmd[9];
+    Guard<char, 9> cmd;
     sprintf_P(cmd, PSTR("M220 S%i"), feedmultiplyBckp);
     enquecommand(cmd);
 
@@ -3908,8 +3908,8 @@ static void gcode_PRUSA_BadRAMBoFanTest(){
 // G92 - Set current position to coordinates given
 static void gcode_G92()
 {
-    bool codes[NUM_AXIS];
-    float values[NUM_AXIS];
+    Guard<bool, NUM_AXIS> codes;
+    Guard<float, NUM_AXIS> values;
 
     // Check which axes need to be set
     for(uint8_t i = 0; i < NUM_AXIS; ++i)
@@ -4124,6 +4124,8 @@ There are reasons why some G Codes aren't in numerical order.
 
 void process_commands()
 {
+    REC_SENTINEL(process_commands);
+
 #ifdef FANCHECK
     if(fan_check_error == EFCE_DETECTED) {
         fan_check_error = EFCE_REPORTED;
@@ -4158,8 +4160,8 @@ void process_commands()
   KEEPALIVE_STATE(IN_HANDLER);
 
 #ifdef SNMM
-  float tmp_motor[3] = DEFAULT_PWM_MOTOR_CURRENT;
-  float tmp_motor_loud[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
+  Guard<float, 3> tmp_motor= DEFAULT_PWM_MOTOR_CURRENT;
+  Guard<float, 3> tmp_motor_loud= DEFAULT_PWM_MOTOR_CURRENT_LOUD;
   int8_t SilentMode;
 #endif
     /*!
@@ -4444,7 +4446,7 @@ void process_commands()
         card.openFileWrite(strchr_pointer+4);
 
 	} else if (code_seen_P(PSTR("SN"))) { // PRUSA SN
-        char SN[20];
+        Guard<char, 20> SN;
         eeprom_read_block(SN, (uint8_t*)EEPROM_PRUSA_SN, 20);
         if (SN[19])
             puts_P(PSTR("SN invalid"));
@@ -4595,8 +4597,8 @@ eeprom_update_word((uint16_t*)EEPROM_NOZZLE_DIAMETER_uM,0xFFFF);
             if(READ(FR_SENS)){
 
                         int feedmultiplyBckp=feedmultiply;
-                        float target[4];
-                        float lastpos[4];
+                        Guard<float, 4> target;
+                        Guard<float, 4> lastpos;
                         target[X_AXIS]=current_position[X_AXIS];
                         target[Y_AXIS]=current_position[Y_AXIS];
                         target[Z_AXIS]=current_position[Z_AXIS];
@@ -4748,7 +4750,7 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
                         
                      
                         
-                        char cmd[9];
+                        Guard<char, 9> cmd;
 
                         sprintf_P(cmd, PSTR("M220 S%i"), feedmultiplyBckp);
                         enquecommand(cmd);
@@ -4989,9 +4991,9 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
             // so Vx = -a Vy = -b Vz = 1 (we want the vector facing towards positive Z
 
             // "A" matrix of the linear system of equations
-            double eqnAMatrix[AUTO_BED_LEVELING_GRID_POINTS*AUTO_BED_LEVELING_GRID_POINTS*3];
+            Guard<double, AUTO_BED_LEVELING_GRID_POINTS*AUTO_BED_LEVELING_GRID_POINTS*3> eqnAMatrix;
             // "B" vector of Z points
-            double eqnBVector[AUTO_BED_LEVELING_GRID_POINTS*AUTO_BED_LEVELING_GRID_POINTS];
+            Guard<double, AUTO_BED_LEVELING_GRID_POINTS*AUTO_BED_LEVELING_GRID_POINTS> eqnBVector;
 
 
             int probePointCounter = 0;
@@ -5946,7 +5948,7 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
     case 31: //M31 take time since the start of the SD print or an M109 command
       {
       stoptime=_millis();
-      char time[30];
+      Guard<char, 30> time;
       unsigned long t=(stoptime-starttime)/1000;
       int sec,min;
       min=t/60;
@@ -6048,7 +6050,7 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
     {
         // M46: Prusa3D: Show the assigned IP address.
         if (card.ToshibaFlashAir_isEnabled()) {
-            uint8_t ip[4];
+            Guard<uint8_t, 4> ip;
             if (card.ToshibaFlashAir_GetIP(ip)) {
                 // SERIAL_PROTOCOLPGM("Toshiba FlashAir current IP: ");
                 SERIAL_PROTOCOL(uint8_t(ip[0]));
@@ -6146,7 +6148,7 @@ if(eSoundMode!=e_SOUND_MODE_SILENT)
 	double sum=0.0; 
 	double mean=0.0; 
 	double sigma=0.0;
-	double sample_set[50];
+	Guard<double, 50> sample_set;
 	int verbose_level=1, n=0, j, n_samples = 10, n_legs=0;
 	double X_current, Y_current, Z_current;
 	double X_probe_location, Y_probe_location, Z_start_location, ext_position;
@@ -9344,7 +9346,7 @@ Sigma_Exit:
 
 void FlushSerialRequestResend()
 {
-  //char cmdbuffer[bufindr][100]="Resend:";
+  //Guard<char, bufindr> cmdbuffer[100]="Resend:";
   MYSERIAL.flush();
   printf_P(_N("%S: %ld\n%S\n"), _n("Resend"), gcode_LastN + 1, MSG_OK);
 }
@@ -9360,9 +9362,9 @@ void ClearToSend()
 
 #if MOTHERBOARD == BOARD_RAMBO_MINI_1_0 || MOTHERBOARD == BOARD_RAMBO_MINI_1_3
 void update_currents() {
-	float current_high[3] = DEFAULT_PWM_MOTOR_CURRENT_LOUD;
-	float current_low[3] = DEFAULT_PWM_MOTOR_CURRENT;
-	float tmp_motor[3];
+	Guard<float, 3> current_high= DEFAULT_PWM_MOTOR_CURRENT_LOUD;
+	Guard<float, 3> current_low= DEFAULT_PWM_MOTOR_CURRENT;
+	Guard<float, 3> tmp_motor;
 	
 	//SERIAL_ECHOLNPGM("Currents updated: ");
 
@@ -9399,7 +9401,7 @@ void update_currents() {
 
 void get_coordinates()
 {
-  bool seen[4]={false,false,false,false};
+  Guard<bool, 4> seen={false,false,false,false};
   for(int8_t i=0; i < NUM_AXIS; i++) {
     if(code_seen(axis_codes[i]))
     {
@@ -9501,7 +9503,7 @@ void mesh_plan_buffer_line(const float &x, const float &y, const float &z, const
         if (n_segments > 1) {
             // In a multi-segment move explicitly set the final target in the plan
             // as the move will be recalculated in it's entirety
-            float gcode_target[NUM_AXIS];
+            Guard<float, NUM_AXIS> gcode_target;
             gcode_target[X_AXIS] = x;
             gcode_target[Y_AXIS] = y;
             gcode_target[Z_AXIS] = z;
@@ -10230,7 +10232,7 @@ void d_setup()
 
 float d_ReadData()
 {
-	int digit[13];
+	Guard<int, 13> digit;
 	String mergeOutput;
 	float output;
 
@@ -10271,11 +10273,11 @@ float d_ReadData()
 void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_points_num, float shift_x, float shift_y) {
 	int t1 = 0;
 	int t_delay = 0;
-	int digit[13];
+	Guard<int, 13> digit;
 	int m;
-	char str[3];
+	Guard<char, 3> str;
 	//String mergeOutput;
-	char mergeOutput[15];
+	Guard<char, 15> mergeOutput;
 	float output;
 
 	int mesh_point = 0; //index number of calibration point
@@ -10284,13 +10286,13 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 
 	float mesh_home_z_search = 4;
 	float measure_z_height = 0.2f;
-	float row[x_points_num];
+	Guard<float, x_points_num> row;
 	int ix = 0;
 	int iy = 0;
 
 	const char* filename_wldsd = "mesh.txt";
-	char data_wldsd[x_points_num * 7 + 1]; //6 chars(" -A.BCD")for each measurement + null 
-	char numb_wldsd[8]; // (" -A.BCD" + null)
+	Guard<char, x_points_num * 7 + 1> data_wldsd; //6 chars(" -A.BCD")for each measurement + null 
+	Guard<char, 8> numb_wldsd; // (" -A.BCD" + null)
 #ifdef MICROMETER_LOGGING
 	d_setup();
 #endif //MICROMETER_LOGGING
@@ -10462,11 +10464,11 @@ void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_poi
 void bed_analysis(float x_dimension, float y_dimension, int x_points_num, int y_points_num, float shift_x, float shift_y) {
 	int t1 = 0;
 	int t_delay = 0;
-	int digit[13];
+	Guard<int, 13> digit;
 	int m;
-	char str[3];
+	Guard<char, 3> str;
 	//String mergeOutput;
-	char mergeOutput[15];
+	Guard<char, 15> mergeOutput;
 	float output;
 
 	int mesh_point = 0; //index number of calibration point
@@ -10474,13 +10476,13 @@ void bed_analysis(float x_dimension, float y_dimension, int x_points_num, int y_
 	float bed_zero_ref_y = (-0.6f + Y_PROBE_OFFSET_FROM_EXTRUDER);
 
 	float mesh_home_z_search = 4;
-	float row[x_points_num];
+	Guard<float, x_points_num> row;
 	int ix = 0;
 	int iy = 0;
 
 	const char* filename_wldsd = "wldsd.txt";
-	char data_wldsd[70];
-	char numb_wldsd[10];
+	Guard<char, 70> data_wldsd;
+	Guard<char, 10> numb_wldsd;
 
 	d_setup();
 
@@ -10702,9 +10704,16 @@ float temp_comp_interpolation(float inp_temperature) {
 	//cubic spline interpolation
 
 	int n, i, j;
-	float h[10], a, b, c, d, sum, s[10] = { 0 }, x[10], F[10], f[10], m[10][10] = { 0 }, temp;
-	int shift[10];
-	int temp_C[10];
+	Guard<float, 10> h;
+    float a, b, c, d, sum;
+    Guard<float, 10> s;
+    Guard<float, 10> x;
+    Guard<float, 10> F;
+    Guard<float, 10> f;
+    float m[10][10] = { 0 }; // GUARD
+    float temp;
+	Guard<int, 10> shift;
+	Guard<int, 10> temp_C;
 
 	n = 6; //number of measured points
 
@@ -11130,7 +11139,7 @@ ISR(INT4_vect) {
 }
 
 void recover_print(uint8_t automatic) {
-	char cmd[30];
+	Guard<char, 30> cmd;
 	lcd_update_enable(true);
 	lcd_update(2);
   lcd_setstatuspgm(_i("Recovering print    "));////MSG_RECOVERING_PRINT c=20
@@ -11254,10 +11263,10 @@ void restore_print_from_eeprom(bool mbl_was_active) {
 	int feedrate_rec;
 	int feedmultiply_rec;
 	uint8_t fan_speed_rec;
-	char cmd[48];
-	char filename[13];
+	Guard<char, 48> cmd;
+	Guard<char, 13> filename;
 	uint8_t depth = 0;
-	char dir_name[9];
+	Guard<char, 9> dir_name;
 
 	fan_speed_rec = eeprom_read_byte((uint8_t*)EEPROM_UVLO_FAN_SPEED);
     feedrate_rec = eeprom_read_word((uint16_t*)EEPROM_UVLO_FEEDRATE);
@@ -11515,7 +11524,7 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
     // Rather than calling plan_buffer_line directly, push the move into the command queue so that
     // the caller can continue processing. This is used during powerpanic to save the state as we
     // move away from the print.
-    char buf[48];
+    Guard<char, 48> buf;
 
     if(e_move)
     {

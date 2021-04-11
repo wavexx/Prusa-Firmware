@@ -103,10 +103,10 @@ typedef struct CID {
   unsigned char mid;
   // byte 1-2
   /** OEM/Application ID */
-  char oid[2];
+  Guard<char, 2> oid;
   // byte 3-7
   /** Product name */
-  char pnm[5];
+  Guard<char, 5> pnm;
   // byte 8
   /** Product revision least significant digit */
   unsigned char prv_m : 4;

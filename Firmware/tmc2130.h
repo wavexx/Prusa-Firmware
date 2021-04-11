@@ -5,13 +5,13 @@
 //mode
 extern uint8_t tmc2130_mode;
 //holding and running currents
-extern uint8_t tmc2130_current_h[4];
-extern uint8_t tmc2130_current_r[4];
+extern Guard<uint8_t, 4> tmc2130_current_h;
+extern Guard<uint8_t, 4> tmc2130_current_r;
 //microstep resolution (0 means 256usteps, 8 means 1ustep
-extern uint8_t tmc2130_mres[4];
+extern Guard<uint8_t, 4> tmc2130_mres;
 
 //flags for axis stall detection
-extern uint8_t tmc2130_sg_thr[4];
+extern Guard<uint8_t, 4> tmc2130_sg_thr;
 
 extern bool tmc2130_sg_stop_on_crash;
 extern uint8_t tmc2130_sg_crash; //crash mask
@@ -42,11 +42,11 @@ extern uint8_t tmc2130_sg_homing_axes_mask;
 #endif
 
 extern uint8_t tmc2130_home_enabled;
-extern uint8_t tmc2130_home_origin[2];
-extern uint8_t tmc2130_home_bsteps[2];
-extern uint8_t tmc2130_home_fsteps[2];
+extern Guard<uint8_t, 2> tmc2130_home_origin;
+extern Guard<uint8_t, 2> tmc2130_home_bsteps;
+extern Guard<uint8_t, 2> tmc2130_home_fsteps;
 
-extern uint8_t tmc2130_wave_fac[4];
+extern Guard<uint8_t, 4> tmc2130_wave_fac;
 
 #pragma pack(push)
 #pragma pack(1)

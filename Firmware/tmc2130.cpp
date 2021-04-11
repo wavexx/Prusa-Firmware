@@ -19,28 +19,28 @@
 //mode
 uint8_t tmc2130_mode = TMC2130_MODE_NORMAL;
 //holding currents
-uint8_t tmc2130_current_h[4] = TMC2130_CURRENTS_H;
+Guard<uint8_t, 4> tmc2130_current_h= TMC2130_CURRENTS_H;
 //running currents
-uint8_t tmc2130_current_r[4] = TMC2130_CURRENTS_R;
+Guard<uint8_t, 4> tmc2130_current_r= TMC2130_CURRENTS_R;
 
 //running currents for homing
-uint8_t tmc2130_current_r_home[4] = TMC2130_CURRENTS_R_HOME;
+Guard<uint8_t, 4> tmc2130_current_r_home= TMC2130_CURRENTS_R_HOME;
 
 
 //pwm_ampl
-uint8_t tmc2130_pwm_ampl[4] = {TMC2130_PWM_AMPL_X, TMC2130_PWM_AMPL_Y, TMC2130_PWM_AMPL_Z, TMC2130_PWM_AMPL_E};
+Guard<uint8_t, 4> tmc2130_pwm_ampl= {TMC2130_PWM_AMPL_X, TMC2130_PWM_AMPL_Y, TMC2130_PWM_AMPL_Z, TMC2130_PWM_AMPL_E};
 //pwm_grad
-uint8_t tmc2130_pwm_grad[4] = {TMC2130_PWM_GRAD_X, TMC2130_PWM_GRAD_Y, TMC2130_PWM_GRAD_Z, TMC2130_PWM_GRAD_E};
+Guard<uint8_t, 4> tmc2130_pwm_grad= {TMC2130_PWM_GRAD_X, TMC2130_PWM_GRAD_Y, TMC2130_PWM_GRAD_Z, TMC2130_PWM_GRAD_E};
 //pwm_auto
-uint8_t tmc2130_pwm_auto[4] = {TMC2130_PWM_AUTO_X, TMC2130_PWM_AUTO_Y, TMC2130_PWM_AUTO_Z, TMC2130_PWM_AUTO_E};
+Guard<uint8_t, 4> tmc2130_pwm_auto= {TMC2130_PWM_AUTO_X, TMC2130_PWM_AUTO_Y, TMC2130_PWM_AUTO_Z, TMC2130_PWM_AUTO_E};
 //pwm_freq
-uint8_t tmc2130_pwm_freq[4] = {TMC2130_PWM_FREQ_X, TMC2130_PWM_FREQ_Y, TMC2130_PWM_FREQ_Z, TMC2130_PWM_FREQ_E};
+Guard<uint8_t, 4> tmc2130_pwm_freq= {TMC2130_PWM_FREQ_X, TMC2130_PWM_FREQ_Y, TMC2130_PWM_FREQ_Z, TMC2130_PWM_FREQ_E};
 
-uint8_t tmc2130_mres[4] = {0, 0, 0, 0}; //will be filed at begin of init
+Guard<uint8_t, 4> tmc2130_mres= {0, 0, 0, 0}; //will be filed at begin of init
 
 
-uint8_t tmc2130_sg_thr[4] = {TMC2130_SG_THRS_X, TMC2130_SG_THRS_Y, TMC2130_SG_THRS_Z, TMC2130_SG_THRS_E};
-uint8_t tmc2130_sg_thr_home[4] = TMC2130_SG_THRS_HOME;
+Guard<uint8_t, 4> tmc2130_sg_thr= {TMC2130_SG_THRS_X, TMC2130_SG_THRS_Y, TMC2130_SG_THRS_Z, TMC2130_SG_THRS_E};
+Guard<uint8_t, 4> tmc2130_sg_thr_home= TMC2130_SG_THRS_HOME;
 
 
 uint8_t tmc2130_sg_homing_axes_mask = 0x00;
@@ -50,11 +50,11 @@ uint32_t tmc2130_sg_meassure_cnt = 0;
 uint32_t tmc2130_sg_meassure_val = 0;
 
 uint8_t tmc2130_home_enabled = 0;
-uint8_t tmc2130_home_origin[2] = {0, 0};
-uint8_t tmc2130_home_bsteps[2] = {48, 48};
-uint8_t tmc2130_home_fsteps[2] = {48, 48};
+Guard<uint8_t, 2> tmc2130_home_origin= {0, 0};
+Guard<uint8_t, 2> tmc2130_home_bsteps= {48, 48};
+Guard<uint8_t, 2> tmc2130_home_fsteps= {48, 48};
 
-uint8_t tmc2130_wave_fac[4] = {0, 0, 0, 0};
+Guard<uint8_t, 4> tmc2130_wave_fac= {0, 0, 0, 0};
 
 tmc2130_chopper_config_t tmc2130_chopper_config[4] = {
 	{TMC2130_TOFF_XYZ, 5, 1, 2, 0},
@@ -66,8 +66,8 @@ tmc2130_chopper_config_t tmc2130_chopper_config[4] = {
 bool tmc2130_sg_stop_on_crash = true;
 uint8_t tmc2130_sg_diag_mask = 0x00;
 uint8_t tmc2130_sg_crash = 0;
-uint16_t tmc2130_sg_err[4] = {0, 0, 0, 0};
-uint16_t tmc2130_sg_cnt[4] = {0, 0, 0, 0};
+Guard<uint16_t, 4> tmc2130_sg_err= {0, 0, 0, 0};
+Guard<uint16_t, 4> tmc2130_sg_cnt= {0, 0, 0, 0};
 #ifdef DEBUG_CRASHDET_COUNTERS
 bool tmc2130_sg_change = false;
 #endif
@@ -902,8 +902,8 @@ void tmc2130_set_wave(uint8_t axis, uint8_t amp, uint8_t fac1000)
 	uint8_t va = 0;                //previous vA
 	int8_t d0 = 0;                //delta0
 	int8_t d1 = 1;                //delta1
-	uint8_t w[4] = {1,1,1,1};      //W bits (MSLUTSEL)
-	uint8_t x[3] = {255,255,255};  //X segment bounds (MSLUTSEL)
+	Guard<uint8_t, 4> w= {1,1,1,1};      //W bits (MSLUTSEL)
+	Guard<uint8_t, 3> x= {255,255,255};  //X segment bounds (MSLUTSEL)
 	uint8_t s = 0;                 //current segment
 	int8_t b;                      //encoded bit value
     int8_t dA;                     //delta value
@@ -1022,9 +1022,9 @@ uint8_t clusterize_uint8(uint8_t* data, uint8_t size, uint8_t* ccnt, uint8_t* cv
 
 bool tmc2130_home_calibrate(uint8_t axis)
 {
-	uint8_t step[16];
-	uint8_t cnt[16];
-	uint8_t val[16];
+	Guard<uint8_t, 16> step;
+	Guard<uint8_t, 16> cnt;
+	Guard<uint8_t, 16> val;
 	homeaxis(axis, 16, step);
 	bubblesort_uint8(step, 16, 0);
 	puts_P(PSTR("sorted samples:"));

@@ -77,7 +77,7 @@ extern uint8_t selectedSerialPort;
 
 struct ring_buffer
 {
-  unsigned char buffer[RX_BUFFER_SIZE];
+  Guard<unsigned char, RX_BUFFER_SIZE> buffer;
   int head;
   int tail;
 };

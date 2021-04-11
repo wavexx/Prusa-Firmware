@@ -236,7 +236,7 @@ double r8mat_amax ( int m, int n, double a[] )
 
     Input, int N, the number of columns in A.
 
-    Input, double A[M*N], the M by N matrix.
+    Input, Guard<double, M*N> A, the M by N matrix.
 
     Output, double R8MAT_AMAX, the maximum absolute value entry of A.
 */
@@ -289,9 +289,9 @@ double *r8mat_copy_new ( int m, int n, double a1[] )
 
     Input, int M, N, the number of rows and columns.
 
-    Input, double A1[M*N], the matrix to be copied.
+    Input, Guard<double, M*N> A1, the matrix to be copied.
 
-    Output, double R8MAT_COPY_NEW[M*N], the copy of A1.
+    Output, Guard<double, M*N> R8MAT_COPY_NEW, the copy of A1.
 */
 {
   double *a2;
@@ -355,11 +355,11 @@ void daxpy ( int n, double da, double dx[], int incx, double dy[], int incy )
 
     Input, double DA, the multiplier of DX.
 
-    Input, double DX[*], the first vector.
+    Input, Guard<double, *> DX, the first vector.
 
     Input, int INCX, the increment between successive entries of DX.
 
-    Input/output, double DY[*], the second vector.
+    Input/output, Guard<double, *> DY, the second vector.
     On output, DY[*] has been replaced by DY[*] + DA * DX[*].
 
     Input, int INCY, the increment between successive entries of DY.
@@ -474,11 +474,11 @@ double ddot ( int n, double dx[], int incx, double dy[], int incy )
 
     Input, int N, the number of entries in the vectors.
 
-    Input, double DX[*], the first vector.
+    Input, Guard<double, *> DX, the first vector.
 
     Input, int INCX, the increment between successive entries in DX.
 
-    Input, double DY[*], the second vector.
+    Input, Guard<double, *> DY, the second vector.
 
     Input, int INCY, the increment between successive entries in DY.
 
@@ -594,7 +594,7 @@ double dnrm2 ( int n, double x[], int incx )
 
     Input, int N, the number of entries in the vector.
 
-    Input, double X[*], the vector whose norm is to be computed.
+    Input, Guard<double, *> X, the vector whose norm is to be computed.
 
     Input, int INCX, the increment between successive entries of X.
 
@@ -693,7 +693,7 @@ void dqrank ( double a[], int lda, int m, int n, double tol, int *kr,
 
   Parameters:
 
-    Input/output, double A[LDA*N].  On input, the matrix whose
+    Input/output, Guard<double, LDA*N> A.  On input, the matrix whose
     decomposition is to be computed.  On output, the information from DQRDC.
     The triangular matrix R of the QR factorization is contained in the
     upper triangle and information needed to recover the orthogonal
@@ -714,12 +714,12 @@ void dqrank ( double a[], int lda, int m, int n, double tol, int *kr,
 
     Output, int *KR, the numerical rank.
 
-    Output, int JPVT[N], the pivot information from DQRDC.
+    Output, Guard<int, N> JPVT, the pivot information from DQRDC.
     Columns JPVT(1), ..., JPVT(KR) of the original matrix are linearly
     independent to within the tolerance TOL and the remaining columns
     are linearly dependent.
 
-    Output, double QRAUX[N], will contain extra information defining
+    Output, Guard<double, N> QRAUX, will contain extra information defining
     the QR factorization.
 */
 {
@@ -812,7 +812,7 @@ void dqrdc ( double a[], int lda, int n, int p, double qraux[], int jpvt[],
 
     Input, int P, the number of columns of the matrix A.
 
-    Output, double QRAUX[P], contains further information required
+    Output, Guard<double, P> QRAUX, contains further information required
     to recover the orthogonal part of the decomposition.
 
     Input/output, integer JPVT[P].  On input, JPVT contains integers that
@@ -831,7 +831,7 @@ void dqrdc ( double a[], int lda, int n, int p, double qraux[], int jpvt[],
     original matrix that has been interchanged into the K-th column, if
     pivoting was requested.
 
-    Workspace, double WORK[P].  WORK is not referenced if JOB == 0.
+    Workspace, Guard<double, P> WORK.  WORK is not referenced if JOB == 0.
 
     Input, int JOB, initiates column pivoting.
     0, no pivoting is done.
@@ -1062,7 +1062,7 @@ int dqrls ( double a[], int lda, int m, int n, double tol, int *kr, double b[],
 
   Parameters:
 
-    Input/output, double A[LDA*N], an M by N matrix.
+    Input/output, Guard<double, LDA*N> A, an M by N matrix.
     On input, the matrix whose decomposition is to be computed.
     In a least squares data fitting problem, A(I,J) is the
     value of the J-th basis (model) function at the I-th data point.
@@ -1085,22 +1085,22 @@ int dqrls ( double a[], int lda, int m, int n, double tol, int *kr, double b[],
 
     Output, int *KR, the numerical rank.
 
-    Input, double B[M], the right hand side of the linear system.
+    Input, Guard<double, M> B, the right hand side of the linear system.
 
-    Output, double X[N], a least squares solution to the linear
+    Output, Guard<double, N> X, a least squares solution to the linear
     system.
 
-    Output, double RSD[M], the residual, B - A*X.  RSD may
+    Output, Guard<double, M> RSD, the residual, B - A*X.  RSD may
     overwrite B.
 
-    Workspace, int JPVT[N], required if ITASK = 1.
+    Workspace, Guard<int, N> JPVT, required if ITASK = 1.
     Columns JPVT(1), ..., JPVT(KR) of the original matrix are linearly
     independent to within the tolerance TOL and the remaining columns
     are linearly dependent.  ABS ( A(1,1) ) / ABS ( A(KR,KR) ) is an estimate
     of the condition number of the matrix of independent columns,
     and of R.  This estimate will be <= 1/TOL.
 
-    Workspace, double QRAUX[N], required if ITASK = 1.
+    Workspace, Guard<double, N> QRAUX, required if ITASK = 1.
 
     Input, int ITASK.
     1, DQRLS factors the matrix A and solves the least squares problem.
@@ -1202,7 +1202,7 @@ void dqrlss ( double a[], int lda, int m, int n, int kr, double b[], double x[],
 
   Parameters:
 
-    Input, double A[LDA*N], the QR factorization information
+    Input, Guard<double, LDA*N> A, the QR factorization information
     from DQRANK.  The triangular matrix R of the QR factorization is
     contained in the upper triangle and information needed to recover
     the orthogonal matrix Q is stored below the diagonal in A and in
@@ -1217,20 +1217,20 @@ void dqrlss ( double a[], int lda, int m, int n, int kr, double b[], double x[],
 
     Input, int KR, the rank of the matrix, as estimated by DQRANK.
 
-    Input, double B[M], the right hand side of the linear system.
+    Input, Guard<double, M> B, the right hand side of the linear system.
 
-    Output, double X[N], a least squares solution to the
+    Output, Guard<double, N> X, a least squares solution to the
     linear system.
 
-    Output, double RSD[M], the residual, B - A*X.  RSD may
+    Output, Guard<double, M> RSD, the residual, B - A*X.  RSD may
     overwrite B.
 
-    Input, int JPVT[N], the pivot information from DQRANK.
+    Input, Guard<int, N> JPVT, the pivot information from DQRANK.
     Columns JPVT[0], ..., JPVT[KR-1] of the original matrix are linearly
     independent to within the tolerance TOL and the remaining columns
     are linearly dependent.
 
-    Input, double QRAUX[N], auxiliary information from DQRANK
+    Input, Guard<double, N> QRAUX, auxiliary information from DQRANK
     defining the QR factorization.
 */
 {
@@ -1365,7 +1365,7 @@ int dqrsl ( double a[], int lda, int n, int k, double qraux[], double y[],
 
   Parameters:
 
-    Input, double A[LDA*P], contains the output of DQRDC.
+    Input, Guard<double, LDA*P> A, contains the output of DQRDC.
 
     Input, int LDA, the leading dimension of the array A.
 
@@ -1376,26 +1376,26 @@ int dqrsl ( double a[], int lda, int n, int k, double qraux[], double y[],
     must not be greater than min(N,P), where P is the same as in the
     calling sequence to DQRDC.
 
-    Input, double QRAUX[P], the auxiliary output from DQRDC.
+    Input, Guard<double, P> QRAUX, the auxiliary output from DQRDC.
 
-    Input, double Y[N], a vector to be manipulated by DQRSL.
+    Input, Guard<double, N> Y, a vector to be manipulated by DQRSL.
 
-    Output, double QY[N], contains Q * Y, if requested.
+    Output, Guard<double, N> QY, contains Q * Y, if requested.
 
-    Output, double QTY[N], contains Q' * Y, if requested.
+    Output, Guard<double, N> QTY, contains Q' * Y, if requested.
 
-    Output, double B[K], the solution of the least squares problem
+    Output, Guard<double, K> B, the solution of the least squares problem
       minimize norm2 ( Y - AK * B),
     if its computation has been requested.  Note that if pivoting was
     requested in DQRDC, the J-th component of B will be associated with
     column JPVT(J) of the original matrix A that was input into DQRDC.
 
-    Output, double RSD[N], the least squares residual Y - AK * B,
+    Output, Guard<double, N> RSD, the least squares residual Y - AK * B,
     if its computation has been requested.  RSD is also the orthogonal
     projection of Y onto the orthogonal complement of the column space
     of AK.
 
-    Output, double AB[N], the least squares approximation Ak * B,
+    Output, Guard<double, N> AB, the least squares approximation Ak * B,
     if its computation has been requested.  AB is also the orthogonal
     projection of Y onto the column space of A.
 
@@ -1677,7 +1677,7 @@ void dscal ( int n, double sa, double x[], int incx )
 
     Input, double SA, the multiplier.
 
-    Input/output, double X[*], the vector to be scaled.
+    Input/output, Guard<double, *> X, the vector to be scaled.
 
     Input, int INCX, the increment between successive entries of X.
 */
@@ -1765,11 +1765,11 @@ void dswap ( int n, double x[], int incx, double y[], int incy )
 
     Input, int N, the number of entries in the vectors.
 
-    Input/output, double X[*], one of the vectors to swap.
+    Input/output, Guard<double, *> X, one of the vectors to swap.
 
     Input, int INCX, the increment between successive entries of X.
 
-    Input/output, double Y[*], one of the vectors to swap.
+    Input/output, Guard<double, *> Y, one of the vectors to swap.
 
     Input, int INCY, the increment between successive elements of Y.
 */
@@ -1889,11 +1889,11 @@ double *qr_solve ( int m, int n, double a[], double b[] )
 
     Input, int N, the number of columns of A.
 
-    Input, double A[M*N], the matrix.
+    Input, Guard<double, M*N> A, the matrix.
 
-    Input, double B[M], the right hand side.
+    Input, Guard<double, M> B, the right hand side.
 
-    Output, double QR_SOLVE[N], the least squares solution.
+    Output, Guard<double, N> QR_SOLVE, the least squares solution.
 */
 {
   double *a_qr;

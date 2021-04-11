@@ -83,12 +83,12 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
 			else if (DIR_IS_SUBDIR(&p) && lsAction != LS_Count && lsAction != LS_GetFilename) { // If the entry is a directory and the action is LS_SerialPrint
 				
 				// Get the short name for the item, which we know is a folder
-				char lfilename[FILENAME_LENGTH];
+				Guard<char, FILENAME_LENGTH> lfilename;
 				createFilename(lfilename, p);
 				// Allocate enough stack space for the full path to a folder, trailing slash, and nul
 				bool prepend_is_empty = (prepend[0] == '\0');
 				int len = (prepend_is_empty ? 1 : strlen(prepend)) + strlen(lfilename) + 1 + 1;
-				char path[len];
+				char path[len]; // GUARD
 				// Append the FOLDERNAME12/ to the passed string.
 				// It contains the full path to the "parent" argument.
 				// We now have the full path to the item in this folder.
@@ -356,7 +356,7 @@ bool CardReader::diveSubfolder (const char *&fileName)
             if (dirname_end && dirname_end > dirname_start)
             {
                 const size_t maxLen = 12;
-                char subdirname[maxLen+1];
+                Guard<char, maxLen+1> subdirname;
                 const size_t len = ((static_cast<size_t>(dirname_end-dirname_start))>maxLen) ? maxLen : (dirname_end-dirname_start);
                 strncpy(subdirname, dirname_start, len);
                 subdirname[len] = 0;
@@ -641,7 +641,7 @@ void CardReader::checkautostart(bool force)
       return;
   }
   
-  char autoname[30];
+  Guard<char, 30> autoname;
   sprintf_P(autoname, PSTR("auto%i.g"), lastnr);
   for(int8_t i=0;i<(int8_t)strlen(autoname);i++)
     autoname[i]=tolower(autoname[i]);
@@ -660,7 +660,7 @@ void CardReader::checkautostart(bool force)
     if(p.name[9]!='~') //skip safety copies
     if(strncmp((char*)p.name,autoname,5)==0)
     {
-      char cmd[30];
+      Guard<char, 30> cmd;
       // M23: Select SD file
       sprintf_P(cmd, PSTR("M23 %s"), autoname);
       enquecommand(cmd);
@@ -829,7 +829,7 @@ void CardReader::presort() {
 		// By default re-read the names from SD for every compare
 		// retaining only two filenames at a time. This is very
 		// slow but is safest and uses minimal RAM.
-		char name1[LONG_FILENAME_LENGTH];
+		Guard<char, LONG_FILENAME_LENGTH> name1;
 		uint16_t crmod_time_bckp;
 		uint16_t crmod_date_bckp;
 
@@ -839,7 +839,7 @@ void CardReader::presort() {
 
 		if (fileCnt > 1) {
 			// Init sort order.
-			uint8_t sort_order[fileCnt];
+			uint8_t sort_order[fileCnt]; // GUARD
 			for (uint16_t i = 0; i < fileCnt; i++) {
 				if (!IS_SD_INSERTED) return;
 				manage_heater();
@@ -1004,7 +1004,7 @@ void CardReader::presort() {
 			SERIAL_PROTOCOLLN();
 			#endif
 
-			uint8_t sort_order_reverse_index[fileCnt];
+			uint8_t sort_order_reverse_index[fileCnt]; // GUARD
 			for (uint8_t i = 0; i < fileCnt; i++)
 				sort_order_reverse_index[sort_order[i]] = i;
 			for (uint8_t i = 0; i < fileCnt; i++)

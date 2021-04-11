@@ -132,7 +132,7 @@ void dcode_3()
 	if ((address + count) > EEPROM_SIZE) count = EEPROM_SIZE - address;
 	if (code_seen('X')) // Data
 	{
-		uint8_t data[16];
+		Guard<uint8_t, 16> data;
 		count = parse_hex(strchr_pointer + 1, data, 16);
 		if (count > 0)
 		{
@@ -174,7 +174,7 @@ void dcode_3()
 
 #if 0
 extern float current_temperature_pinda;
-extern float axis_steps_per_unit[NUM_AXIS];
+extern Guard<float, NUM_AXIS> axis_steps_per_unit;
 
 
 #define LOG(args...) printf(args)
@@ -272,7 +272,7 @@ void dcode_2()
 	if ((address + count) > 0x2000) count = 0x2000 - address;
 	if (code_seen('X')) // Data
 	{
-		uint8_t data[16];
+		Guard<uint8_t, 16> data;
 		count = parse_hex(strchr_pointer + 1, data, 16);
 		if (count > 0)
 		{
@@ -381,7 +381,7 @@ void dcode_5()
 	bool bCopy = false;
 	if (code_seen('E')) //Erase
 		bErase = true;
-	uint8_t data[16];
+	Guard<uint8_t, 16> data;
 	if (code_seen('X')) // Data
 	{
 		count = parse_hex(strchr_pointer + 1, data, 16);

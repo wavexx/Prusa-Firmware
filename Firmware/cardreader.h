@@ -76,17 +76,17 @@ public:
   bool logging;
   bool sdprinting ;  
   bool cardOK ;
-  char filename[13];
+  Guard<char, 13> filename;
   // There are scenarios when simple modification time is not enough (on MS Windows)
   // Therefore these timestamps hold the most recent one of creation/modification date/times
   uint16_t crmodTime, crmodDate;
   uint32_t /* cluster, */ position;
-  char longFilename[LONG_FILENAME_LENGTH];
+  Guard<char, LONG_FILENAME_LENGTH> longFilename;
   bool filenameIsDir;
   int lastnr; //last number of the autostart;
 #ifdef SDCARD_SORT_ALPHA
   bool presort_flag;
-  char dir_names[MAX_DIR_DEPTH][9];
+  Guard<char, MAX_DIR_DEPTH> dir_names[9];
 #endif // SDCARD_SORT_ALPHA
 private:
   SdFile root,*curDir,workDir,workDirParents[MAX_DIR_DEPTH];
@@ -95,7 +95,7 @@ private:
   // Sort files and folders alphabetically.
 #ifdef SDCARD_SORT_ALPHA
   uint16_t sort_count;        // Count of sorted items in the current directory
-  uint32_t sort_positions[SDSORT_LIMIT];
+  Guard<uint32_t, SDSORT_LIMIT> sort_positions;
 
 #endif // SDCARD_SORT_ALPHA
 
@@ -110,8 +110,8 @@ private:
   #define SD_PROCEDURE_DEPTH 1
   #define MAXPATHNAMELENGTH (13*MAX_DIR_DEPTH+MAX_DIR_DEPTH+1)
   uint8_t file_subcall_ctr;
-  uint32_t filespos[SD_PROCEDURE_DEPTH];
-  char filenames[SD_PROCEDURE_DEPTH][MAXPATHNAMELENGTH];
+  Guard<uint32_t, SD_PROCEDURE_DEPTH> filespos;
+  Guard<char, SD_PROCEDURE_DEPTH> filenames[MAXPATHNAMELENGTH];
   uint32_t filesize;
   //int16_t n;
   unsigned long autostart_atmillis;

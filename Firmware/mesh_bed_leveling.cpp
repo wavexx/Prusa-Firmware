@@ -15,7 +15,7 @@ void mesh_bed_leveling::reset() {
             z_values[y][x] = 0;
 }
 
-static inline bool vec_undef(const float v[2])
+static inline bool vec_undef(float v[2])
 {
     const uint32_t *vx = (const uint32_t*)v;
     return vx[0] == 0x0FFFFFFFF || vx[1] == 0x0FFFFFFFF;

@@ -5,7 +5,7 @@
 extern bool Stopped;
 
 // Reserve BUFSIZE lines of length MAX_CMD_SIZE plus CMDBUFFER_RESERVE_FRONT.
-char cmdbuffer[BUFSIZE * (MAX_CMD_SIZE + 1) + CMDBUFFER_RESERVE_FRONT];
+Guard<char, BUFSIZE * (MAX_CMD_SIZE + 1) + CMDBUFFER_RESERVE_FRONT> cmdbuffer;
 // Head of the circular buffer, where to read.
 size_t bufindr = 0;
 // Tail of the buffer, where to write.
@@ -54,7 +54,7 @@ bool cmdqueue_pop_front()
         SERIAL_ECHOPGM(", serial_count ");
         SERIAL_ECHO(serial_count);
         SERIAL_ECHOPGM(", bufsize ");
-        SERIAL_ECHO(sizeof(cmdbuffer));
+        SERIAL_ECHO(cmdbuffer.size());
         SERIAL_ECHOLNPGM("");
 #endif /* CMDBUFFER_DEBUG */
         if (-- buflen == 0) {
@@ -68,9 +68,9 @@ bool cmdqueue_pop_front()
             // First skip the current command ID and iterate up to the end of the string.
             for (bufindr += CMDHDRSIZE; cmdbuffer[bufindr] != 0; ++ bufindr) ;
             // Second, skip the end of string null character and iterate until a nonzero command ID is found.
-            for (++ bufindr; bufindr < sizeof(cmdbuffer) && cmdbuffer[bufindr] == 0; ++ bufindr) ;
+            for (++ bufindr; bufindr < cmdbuffer.size() && cmdbuffer[bufindr] == 0; ++ bufindr) ;
             // If the end of the buffer was empty,
-            if (bufindr == sizeof(cmdbuffer)) {
+            if (bufindr == cmdbuffer.size()) {
                 // skip to the start and find the nonzero command.
                 for (bufindr = 0; cmdbuffer[bufindr] == 0; ++ bufindr) ;
             }
@@ -142,7 +142,7 @@ static bool cmdqueue_could_enqueue_front(size_t len_asked)
             bufindr -= len_asked + (1 + CMDHDRSIZE);
             return true;
         }
-        int bufindr_new = sizeof(cmdbuffer) - len_asked - (1 + CMDHDRSIZE);
+        int bufindr_new = cmdbuffer.size() - len_asked - (1 + CMDHDRSIZE);
         if (endw <= bufindr_new) {
             memset(cmdbuffer, 0, bufindr);
             bufindr = bufindr_new;
@@ -180,14 +180,14 @@ static bool cmdqueue_could_enqueue_back(size_t len_asked, bool atomic_update = f
             return endw + CMDBUFFER_RESERVE_FRONT <= bufindr;
         // Otherwise the free space is split between the start and end.
         if (// Could one fit to the end, including the reserve?
-            endw + CMDBUFFER_RESERVE_FRONT <= sizeof(cmdbuffer) ||
+            endw + CMDBUFFER_RESERVE_FRONT <= cmdbuffer.size() ||
             // Could one fit to the end, and the reserve to the start?
-            (endw <= sizeof(cmdbuffer) && CMDBUFFER_RESERVE_FRONT <= bufindr))
+            (endw <= cmdbuffer.size() && CMDBUFFER_RESERVE_FRONT <= bufindr))
             return true;
         // Could one fit both to the start?
         if (len_asked + (1 + CMDHDRSIZE) + CMDBUFFER_RESERVE_FRONT <= bufindr) {
             // Mark the rest of the buffer as used.
-            memset(cmdbuffer+bufindw, 0, sizeof(cmdbuffer)-bufindw);
+            memset(cmdbuffer+bufindw, 0, cmdbuffer.size()-bufindw);
             // and point to the start.
             // Be careful! The bufindw needs to be changed atomically for the power panic & filament panic to work.
             if (atomic_update)
@@ -206,14 +206,14 @@ static bool cmdqueue_could_enqueue_back(size_t len_asked, bool atomic_update = f
             return endw + CMDBUFFER_RESERVE_FRONT <= bufindr;
         // Otherwise the free space is split between the start and end.
         if (// Could one fit to the end, including the reserve?
-            endw + CMDBUFFER_RESERVE_FRONT <= sizeof(cmdbuffer) ||
+                endw + CMDBUFFER_RESERVE_FRONT <= cmdbuffer.size() ||
             // Could one fit to the end, and the reserve to the start?
-            (endw <= sizeof(cmdbuffer) && CMDBUFFER_RESERVE_FRONT <= bufindr))
+                (endw <= cmdbuffer.size() && CMDBUFFER_RESERVE_FRONT <= bufindr))
             return true;
         // Could one fit both to the start?
         if (len_asked + (1 + CMDHDRSIZE) + CMDBUFFER_RESERVE_FRONT <= bufindr) {
             // Mark the rest of the buffer as used.
-            memset(cmdbuffer+bufindw, 0, sizeof(cmdbuffer)-bufindw);
+            memset(cmdbuffer+bufindw, 0, cmdbuffer.size()-bufindw);
             // and point to the start.
             // Be careful! The bufindw needs to be changed atomically for the power panic & filament panic to work.
             if (atomic_update)
@@ -265,12 +265,12 @@ void cmdqueue_dump_to_serial()
                 for (++p; p < cmdbuffer + bufindw && *p == 0; ++ p);
             }
         } else {
-            for (const char *p = cmdbuffer + bufindr; p < cmdbuffer + sizeof(cmdbuffer); ++ nr) {
+            for (const char *p = cmdbuffer + bufindr; p < cmdbuffer + cmdbuffer.size(); ++ nr) {
                 cmdqueue_dump_to_serial_single_line(nr, p);
                 // Skip the command.
                 for (p += CMDHDRSIZE; *p != 0; ++ p);
                 // Skip the gaps.
-                for (++p; p < cmdbuffer + sizeof(cmdbuffer) && *p == 0; ++ p);
+                for (++p; p < cmdbuffer + cmdbuffer.size() && *p == 0; ++ p);
             }
             for (const char *p = cmdbuffer; p < cmdbuffer + bufindw; ++ nr) {
                 cmdqueue_dump_to_serial_single_line(nr, p);
@@ -307,7 +307,7 @@ void enquecommand(const char *cmd, bool from_progmem)
         SERIAL_ECHO(cmdbuffer + bufindw + CMDHDRSIZE);
         SERIAL_ECHOLNPGM("\"");
         bufindw += len + (CMDHDRSIZE + 1);
-        if (bufindw == sizeof(cmdbuffer))
+        if (bufindw == cmdbuffer.size())
             bufindw = 0;
         ++ buflen;
 #ifdef CMDBUFFER_DEBUG
@@ -515,7 +515,7 @@ void get_command()
         SERIAL_ECHOLNPGM("");
 #endif /* CMDBUFFER_DEBUG */
         bufindw += strlen(cmdbuffer+bufindw+CMDHDRSIZE) + (1 + CMDHDRSIZE);
-        if (bufindw == sizeof(cmdbuffer))
+        if (bufindw == cmdbuffer.size())
             bufindw = 0;
         ++ buflen;
 #ifdef CMDBUFFER_DEBUG
@@ -543,14 +543,14 @@ void get_command()
             cmdbuffer[bufindw+serial_count+CMDHDRSIZE] = 0;
             
             bufindw += strlen(cmdbuffer+bufindw+CMDHDRSIZE) + (1 + CMDHDRSIZE);
-            if (bufindw == sizeof(cmdbuffer))
+            if (bufindw == cmdbuffer.size())
                 bufindw = 0;
             ++ buflen;
             
             serial_count = 0;
             
             SERIAL_ECHOPGM("TIMEOUT:");
-            //memset(cmdbuffer, 0 , sizeof(cmdbuffer));
+            //memset(cmdbuffer, 0 , cmdbuffer.size());
             return;
         }
     }
@@ -626,7 +626,7 @@ void get_command()
       ++ buflen;
       bufindw += len;
       sdpos_atomic = card.get_sdpos()+1;
-      if (bufindw == sizeof(cmdbuffer))
+      if (bufindw == cmdbuffer.size())
           bufindw = 0;
       sei();
 
@@ -655,7 +655,7 @@ void get_command()
       {
           SERIAL_PROTOCOLLNRPGM(_n("Done printing file"));////MSG_FILE_PRINTED
           stoptime=_millis();
-          char time[30];
+          Guard<char, 30> time;
           unsigned long t=(stoptime-starttime-pause_time)/1000;
           pause_time = 0;
           int hours, minutes;
@@ -703,9 +703,9 @@ uint16_t cmdqueue_calc_sd_length()
         // First skip the current command ID and iterate up to the end of the string.
         for (_bufindr += CMDHDRSIZE; cmdbuffer[_bufindr] != 0; ++ _bufindr) ;
         // Second, skip the end of string null character and iterate until a nonzero command ID is found.
-        for (++ _bufindr; _bufindr < sizeof(cmdbuffer) && cmdbuffer[_bufindr] == 0; ++ _bufindr) ;
+        for (++ _bufindr; _bufindr < cmdbuffer.size() && cmdbuffer[_bufindr] == 0; ++ _bufindr) ;
         // If the end of the buffer was empty,
-        if (_bufindr == sizeof(cmdbuffer)) {
+        if (_bufindr == cmdbuffer.size()) {
             // skip to the start and find the nonzero command.
             for (_bufindr = 0; cmdbuffer[_bufindr] == 0; ++ _bufindr) ;
         }

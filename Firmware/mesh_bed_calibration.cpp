@@ -14,9 +14,9 @@
 #define DBG(args...) printf_P(args)
 
 uint8_t world2machine_correction_mode;
-float   world2machine_rotation_and_skew[2][2];
-float   world2machine_rotation_and_skew_inv[2][2];
-float   world2machine_shift[2];
+Guard<float, 2> world2machine_rotation_and_skew[2];
+Guard<float, 2> world2machine_rotation_and_skew_inv[2];
+Guard<float, 2> world2machine_shift;
 
 // Weight of the Y coordinate for the least squares fitting of the bed induction sensor targets.
 // Only used for the first row of the points, which may not befully in reach of the sensor.
@@ -250,8 +250,8 @@ BedSkewOffsetDetectionResultType calculate_machine_skew_and_offset_LS(
         float c2 = cos(a2) * MACHINE_AXIS_SCALE_Y;
         float s2 = sin(a2) * MACHINE_AXIS_SCALE_Y;
         // Prepare the Normal equation for the Gauss-Newton method.
-        float A[4][4] = { 0.f };
-        float b[4] = { 0.f };
+        Guard<float, 4> A[4] = { 0.f };
+        Guard<float, 4> b= { 0.f };
         float acc;
 		delay_keep_alive(0); //manage heater, reset watchdog, manage inactivity
         for (uint8_t r = 0; r < 4; ++r) {
@@ -318,7 +318,7 @@ BedSkewOffsetDetectionResultType calculate_machine_skew_and_offset_LS(
         }
 
         // Solve for h by a Gauss iteration method.
-        float h[4] = { 0.f };
+        Guard<float, 4> h= { 0.f };
         for (uint8_t gauss_iter = 0; gauss_iter < 100; ++gauss_iter) {
             h[0] = (b[0] - A[0][1] * h[1] - A[0][2] * h[2] - A[0][3] * h[3]) / A[0][0];
             h[1] = (b[1] - A[1][0] * h[0] - A[1][2] * h[2] - A[1][3] * h[3]) / A[1][1];
@@ -587,11 +587,11 @@ BedSkewOffsetDetectionResultType calculate_machine_skew_and_offset_LS(
     // Invert the transformation matrix made of vec_x, vec_y and cntr.
     {
         float d = vec_x[0] * vec_y[1] - vec_x[1] * vec_y[0];
-        float Ainv[2][2] = {
+        Guard<float, 2> Ainv[2] = {
             { vec_y[1] / d, -vec_y[0] / d },
             { -vec_x[1] / d, vec_x[0] / d }
         };
-        float cntrInv[2] = {
+        Guard<float, 2> cntrInv= {
             -Ainv[0][0] * cntr[0] - Ainv[0][1] * cntr[1],
             -Ainv[1][0] * cntr[0] - Ainv[1][1] * cntr[1]
         };
@@ -871,9 +871,9 @@ void world2machine_initialize()
 #if 0
     SERIAL_ECHOLNPGM("world2machine_initialize");
 #endif
-    float vec_x[2];
-    float vec_y[2];
-    float cntr[2];
+    Guard<float, 2> vec_x;
+    Guard<float, 2> vec_y;
+    Guard<float, 2> cntr;
     world2machine_read_valid(vec_x, vec_y, cntr);
     world2machine_update(vec_x, vec_y, cntr);
 #if 0
@@ -1221,7 +1221,7 @@ BedSkewOffsetDetectionResultType find_bed_induction_sensor_point_xy(int
 			MYSERIAL.println(current_position[Z_AXIS]);
 			// Do nsteps_y zig-zag movements.
 			float a, b;
-			float avg[2] = { 0,0 };
+			Guard<float, 2> avg= { 0,0 };
 			invert_z_endstop(true);
 			for (int iteration = 0; iteration < 8; iteration++) {
 
@@ -3095,19 +3095,19 @@ void babystep_reset()
 	babystepLoadZ = 0;    
 }
 
-void count_xyz_details(float (&distanceMin)[2]) {
-	float cntr[2] = {
+void count_xyz_details(float distanceMin[2]) {
+	Guard<float, 2> cntr= {
 		eeprom_read_float((float*)(EEPROM_BED_CALIBRATION_CENTER + 0)),
 		eeprom_read_float((float*)(EEPROM_BED_CALIBRATION_CENTER + 4))
 	};
-	float vec_x[2] = {
+	Guard<float, 2> vec_x({
 		eeprom_read_float((float*)(EEPROM_BED_CALIBRATION_VEC_X + 0)),
 		eeprom_read_float((float*)(EEPROM_BED_CALIBRATION_VEC_X + 4))
-	};
-	float vec_y[2] = {
+    });
+    Guard<float, 2> vec_y({
 		eeprom_read_float((float*)(EEPROM_BED_CALIBRATION_VEC_Y + 0)),
 		eeprom_read_float((float*)(EEPROM_BED_CALIBRATION_VEC_Y + 4))
-	};
+    });
 #if 0
 	a2 = -1 * asin(vec_y[0] / MACHINE_AXIS_SCALE_Y);
 	a1 = asin(vec_x[1] / MACHINE_AXIS_SCALE_X);
@@ -3166,7 +3166,7 @@ bool mbl_point_measurement_valid(uint8_t ix, uint8_t iy, uint8_t meas_points, bo
 		//1 - we should be in safe distance from magnets, measurement should be accurate
 		if ((ix >= meas_points) || (iy >= meas_points)) return false;
 
-		uint8_t valid_points_mask[7] = {
+		Guard<uint8_t, 7> valid_points_mask({
 					//[X_MAX,Y_MAX]
 			//0123456
 			0b1111111,//6
@@ -3177,7 +3177,7 @@ bool mbl_point_measurement_valid(uint8_t ix, uint8_t iy, uint8_t meas_points, bo
 			0b1111111,//1
 			0b1111111,//0
 		//[0,0]
-		};
+        });
 		if (meas_points == 3) {
 			ix *= 3;
 			iy *= 3;

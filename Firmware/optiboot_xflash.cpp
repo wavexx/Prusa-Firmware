@@ -90,7 +90,7 @@ uint8_t optiboot_xflash_enter()
   register pagelen_t length;
   // Use the planner's queue for the receive / transmit buffers.
 //  uint8_t *buff = (uint8_t*)block_buffer;
-  uint8_t buff[260];
+  Guard<uint8_t, 260> buff;
   // bitmap of pages to be written. Bit is set to 1 if the page has already been erased.
   uint8_t pages_erased = 0;
 

@@ -162,7 +162,7 @@ inline bool parse_version_P(const char *str, uint16_t version[4])
     if (! is_whitespace_or_nl_or_eol(char(pgm_read_byte(p))) && pgm_read_byte(p) != '-')
         return false;
 
-    char buf[5];
+    Guard<char, 5> buf;
     uint8_t n = minor - major - 1;
     if (n > 4)
         return false;
@@ -230,7 +230,8 @@ inline bool parse_version_P(const char *str, uint16_t version[4])
 // 1 - yes, 0 - false, -1 - error;
 inline int8_t is_provided_version_newer(const char *version_string)
 {
-    uint16_t ver_gcode[4], ver_current[4];
+    Guard<uint16_t, 4> ver_gcode;
+    Guard<uint16_t, 4> ver_current;
     if (! parse_version(version_string, ver_gcode))
         return -1;
     if (! parse_version_P(FW_VERSION_STR, ver_current))
@@ -245,8 +246,8 @@ bool force_selftest_if_fw_version()
 {
 	//if fw version used before flashing new firmware (fw version currently stored in eeprom) is lower then 3.1.2-RC2, function returns true to force selftest
 
-	uint16_t ver_eeprom[4];
-	uint16_t ver_with_calibration[4] = {3, 1, 2, 4}; //hardcoded 3.1.2-RC2 version
+	Guard<uint16_t, 4> ver_eeprom;
+	Guard<uint16_t, 4> ver_with_calibration= {3, 1, 2, 4}; //hardcoded 3.1.2-RC2 version
 	bool force_selftest = false;
 
 	ver_eeprom[0] = eeprom_read_word((uint16_t*)EEPROM_FIRMWARE_VERSION_MAJOR);
@@ -271,7 +272,8 @@ bool force_selftest_if_fw_version()
 
 bool show_upgrade_dialog_if_version_newer(const char *version_string)
 {
-    uint16_t ver_gcode[4], ver_current[4];
+    Guard<uint16_t, 4> ver_gcode;
+    Guard<uint16_t, 4> ver_current;
     if (! parse_version(version_string, ver_gcode)) {
 //        SERIAL_PROTOCOLLNPGM("parse_version failed");
         return false;
@@ -313,7 +315,7 @@ void update_current_firmware_version_to_eeprom()
 {
     for (int8_t i = 0; i < FW_PRUSA3D_MAGIC_LEN; ++ i)
         eeprom_update_byte((uint8_t*)(EEPROM_FIRMWARE_PRUSA_MAGIC+i), pgm_read_byte(FW_PRUSA3D_MAGIC_STR+i));
-    uint16_t ver_current[4];
+    Guard<uint16_t, 4> ver_current;
     if (parse_version_P(FW_VERSION_STR, ver_current)) {
         eeprom_update_word((uint16_t*)EEPROM_FIRMWARE_VERSION_MAJOR,    ver_current[0]);
         eeprom_update_word((uint16_t*)EEPROM_FIRMWARE_VERSION_MINOR,    ver_current[1]);
@@ -455,7 +457,7 @@ return((uint8_t)ClCompareValue::_Equal);
 
 void fw_version_check(const char *pVersion)
 {
-uint16_t aVersion[4];
+Guard<uint16_t, 4> aVersion;
 uint8_t nCompareValueResult;
 
 if(oCheckVersion==ClCheckVersion::_None)
@@ -553,7 +555,7 @@ void printer_smodel_check(char* pStrPos)
 char* pResult;
 size_t nLength,nPrinterNameLength;
 bool bCheckOK;
-char sPrinterName[PRINTER_NAME_LENGTH+sizeof(ELLIPSIS)-1+1]="";
+Guard<char, PRINTER_NAME_LENGTH+sizeof(ELLIPSIS)-1+1> sPrinterName="";
 
 nPrinterNameLength=strlen_P(::sPrinterName);
 pResult=code_string(pStrPos,&nLength);

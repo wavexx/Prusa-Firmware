@@ -18,9 +18,9 @@ extern int32_t lcd_encoder;
 
 #define MENU_DEPTH_MAX       7
 
-static menu_record_t menu_stack[MENU_DEPTH_MAX];
+static Guard<menu_record_t, MENU_DEPTH_MAX> menu_stack;
 
-uint8_t menu_data[MENU_DATA_SIZE];
+Guard<uint8_t, MENU_DATA_SIZE> menu_data;
 #ifndef __AVR__
 #error "menu_data is non-portable to non 8bit processor"
 #endif
@@ -44,7 +44,7 @@ void menu_data_reset(void)
 {
 	// Resets the global shared C union.
 	// This ensures, that the menu entered will find out, that it shall initialize itself.
-	memset(&menu_data, 0, sizeof(menu_data));
+	memset(menu_data, 0, menu_data.size());
 }
 
 void menu_goto(menu_func_t menu, const uint32_t encoder, const bool feedback, bool reset_menu_state)
@@ -195,7 +195,7 @@ static void menu_draw_toggle_puts_P(const char* str, const char* toggle, const u
     //a = selection mark. If it's set(1), then '>' will be used as the first character on the line. Else leave blank
     //b = toggle string is from progmem
     //c = do not set cursor at all. Must be handled externally.
-    char lineStr[LCD_WIDTH + 1];
+    Guard<char, LCD_WIDTH + 1> lineStr;
     const char eol = (toggle == NULL)?LCD_STR_ARROW_RIGHT[0]:' ';
     if (toggle == NULL) toggle = _T(MSG_NA);
     sprintf_P(lineStr, PSTR("%c%-18.18S"), (settings & 0x01)?'>':' ', str);
@@ -454,7 +454,7 @@ void menu_draw_P<int16_t*>(char chr, const char* str, int16_t val)
 {
 	int text_len = strlen_P(str);
 	if (text_len > 15) text_len = 15;
-	char spaces[LCD_WIDTH + 1] = {0};
+	Guard<char, LCD_WIDTH + 1> spaces;
     memset(spaces,' ', LCD_WIDTH);
 	if (val <= -100) spaces[15 - text_len - 1] = 0;
 	else spaces[15 - text_len] = 0;
