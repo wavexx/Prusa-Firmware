@@ -354,7 +354,7 @@ FORCE_INLINE float max_allowable_entry_speed(float decceleration, float target_v
 // https://courses.cit.cornell.edu/ee476/Math/GCC644/fixedPt/multASM.S
 //
 void planner_recalculate(const float &safe_final_speed) 
-{
+{ REC_SENTINEL(planner_recalculate);
     // Reverse pass
     // Make a local copy of block_buffer_tail, because the interrupt can alter it
     // by consuming the blocks, therefore shortening the queue.
@@ -598,7 +598,7 @@ void check_axes_activity()
 bool waiting_inside_plan_buffer_line_print_aborted = false;
 /*
 void planner_abort_soft()
-{
+{ REC_SENTINEL(planner_abort_soft);
     // Empty the queue.
     while (blocks_queued()) plan_discard_current_block();
     // Relay to planner wait routine, that the current line shall be canceled.
@@ -619,7 +619,7 @@ static inline void planner_update_queue_min_counter()
 extern volatile uint32_t step_events_completed; // The number of step events executed in the current block
 
 void planner_abort_hard()
-{
+{ REC_SENTINEL(planner_abort_hard);
     // Abort the stepper routine and flush the planner queue.
     DISABLE_STEPPER_DRIVER_INTERRUPT();
 
@@ -708,7 +708,7 @@ float junction_deviation = 0.1;
 // mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
 void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, uint8_t extruder, const float* gcode_target)
-{
+{ REC_SENTINEL(plan_buffer_line);
     // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
 

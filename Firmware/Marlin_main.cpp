@@ -594,7 +594,7 @@ void crashdet_restore_print_and_continue()
 }
 
 void crashdet_detected(uint8_t mask)
-{
+{ REC_SENTINEL(crashdet_detected);
 	st_synchronize();
 	static uint8_t crashDet_counter = 0;
 	bool automatic_recovery_after_crash = true;
@@ -656,13 +656,13 @@ void crashdet_detected(uint8_t mask)
 }
 
 void crashdet_recover()
-{
+{ REC_SENTINEL(crashdet_recover);
 	crashdet_restore_print_and_continue();
 	if (lcd_crash_detect_enabled()) tmc2130_sg_stop_on_crash = true;
 }
 
 void crashdet_cancel()
-{
+{ REC_SENTINEL(crashdet_cancel);
 	saved_printing = false;
 	tmc2130_sg_stop_on_crash = true;
 	if (saved_printing_type == PRINTING_TYPE_SD) {
@@ -1729,7 +1729,7 @@ void serial_read_stream() {
 * Output a "busy" message at regular intervals
 * while the machine is not accepting commands.
 */
-void host_keepalive() {
+void host_keepalive() { REC_SENTINEL(host_keepalive);
 #ifndef HOST_KEEPALIVE_FEATURE
   return;
 #endif //HOST_KEEPALIVE_FEATURE
@@ -1784,7 +1784,7 @@ void host_keepalive() {
 // The loop() function is called in an endless loop by the Arduino framework from the default main() routine.
 // Before loop(), the setup() function is called by the main() routine.
 void loop()
-{
+{ REC_SENTINEL(loop);
 	KEEPALIVE_STATE(NOT_BUSY);
 
 	if ((usb_printing_counter > 0) && ((_millis()-_usb_timer) > 1000))
@@ -2107,7 +2107,7 @@ static float probe_pt(float x, float y, float z_before) {
     *
     *  K<factor>                  Set advance K factor
     */
-inline void gcode_M900() {
+inline void gcode_M900() { REC_SENTINEL(gcode_M900);
     float newK = code_seen('K') ? code_value_float() : -2;
 #ifdef LA_NOCOMPAT
     if (newK >= 0 && newK < LA_K_MAX)
@@ -2136,7 +2136,7 @@ inline void gcode_M900() {
 }
 #endif // LIN_ADVANCE
 
-bool check_commands() {
+bool check_commands() { REC_SENTINEL(check_commands);
 	bool end_command_found = false;
 	
 		while (buflen)
@@ -3632,7 +3632,7 @@ static T gcode_M600_filament_change_z_shift()
 }	
 
 static void gcode_M600(bool automatic, float x_position, float y_position, float z_shift, float e_shift, float /*e_shift_late*/)
-{
+{ REC_SENTINEL(gcode_M600);
     st_synchronize();
     Guard<float, 4> lastpos;
 
@@ -4123,8 +4123,7 @@ There are reasons why some G Codes aren't in numerical order.
 
 
 void process_commands()
-{
-    REC_SENTINEL(process_commands);
+{ REC_SENTINEL(process_commands);
 
 #ifdef FANCHECK
     if(fan_check_error == EFCE_DETECTED) {
@@ -9488,7 +9487,7 @@ void clamp_to_software_endstops(float target[3])
 }
 
 #ifdef MESH_BED_LEVELING
-void mesh_plan_buffer_line(const float &x, const float &y, const float &z, const float &e, const float &feed_rate, const uint8_t extruder) {
+void mesh_plan_buffer_line(const float &x, const float &y, const float &z, const float &e, const float &feed_rate, const uint8_t extruder) { REC_SENTINEL(mesh_plan_buffer_line);
         float dx = x - current_position[X_AXIS];
         float dy = y - current_position[Y_AXIS];
         int n_segments = 0;
@@ -9654,7 +9653,7 @@ void handle_status_leds(void) {
  * If safetytimer_inactive_time is zero, feature is disabled (heating is never turned off because of inactivity)
  */
 static void handleSafetyTimer()
-{
+{ REC_SENTINEL(handleSafetyTimer);
 #if (EXTRUDERS > 1)
 #error Implemented only for one extruder.
 #endif //(EXTRUDERS > 1)
@@ -9949,7 +9948,7 @@ void kill(const char *full_screen_message, unsigned char id)
 //   survive a power panic. Switching Stop() to use the pause machinery instead (with
 //   the addition of disabling the headers) could allow true recovery in the future.
 void Stop()
-{
+{ REC_SENTINEL(Stop);
   disable_heater();
   if(Stopped == false) {
     Stopped = true;
@@ -10149,7 +10148,7 @@ void delay_keep_alive(unsigned int ms)
     }
 }
 
-static void wait_for_heater(long codenum, uint8_t extruder) {
+static void wait_for_heater(long codenum, uint8_t extruder) { REC_SENTINEL(wait_for_heater);
     if (!degTargetHotend(extruder))
         return;
 
@@ -10831,7 +10830,7 @@ void uvlo_drain_reset()
 
 
 void uvlo_()
-{
+{ REC_SENTINEL(uvlo_);
 	unsigned long time_start = _millis();
 	bool sd_print = card.sdprinting;
     // Conserve power as soon as possible.
@@ -11006,7 +11005,7 @@ void uvlo_()
 
 
 void uvlo_tiny()
-{
+{ REC_SENTINEL(uvlo_tiny);
     unsigned long time_start = _millis();
 
     // Conserve power as soon as possible.
@@ -11138,7 +11137,7 @@ ISR(INT4_vect) {
      if(eeprom_read_byte((uint8_t*)EEPROM_UVLO)) uvlo_tiny();
 }
 
-void recover_print(uint8_t automatic) {
+void recover_print(uint8_t automatic) { REC_SENTINEL(recover_print);
 	Guard<char, 30> cmd;
 	lcd_update_enable(true);
 	lcd_update(2);
@@ -11185,7 +11184,7 @@ void recover_print(uint8_t automatic) {
 }
 
 bool recover_machine_state_after_power_panic()
-{
+{ REC_SENTINEL(recover_machine_state_after_power_panic);
   // 1) Preset some dummy values for the XY axes
   current_position[X_AXIS] = 0;
   current_position[Y_AXIS] = 0;
@@ -11259,7 +11258,7 @@ bool recover_machine_state_after_power_panic()
   return mbl_was_active;
 }
 
-void restore_print_from_eeprom(bool mbl_was_active) {
+void restore_print_from_eeprom(bool mbl_was_active) { REC_SENTINEL(restore_print_from_eeprom);
 	int feedrate_rec;
 	int feedmultiply_rec;
 	uint8_t fan_speed_rec;
@@ -11365,7 +11364,7 @@ void restore_print_from_eeprom(bool mbl_was_active) {
 //! @param z_move
 //! @param e_move
 void stop_and_save_print_to_ram(float z_move, float e_move)
-{
+{ REC_SENTINEL(stop_and_save_print_to_ram);
 	if (saved_printing) return;
 #if 0
 	unsigned char nplanner_blocks;
@@ -11572,7 +11571,7 @@ void stop_and_save_print_to_ram(float z_move, float e_move)
 //!
 //! @param e_move
 void restore_print_from_ram_and_continue(float e_move)
-{
+{ REC_SENTINEL(restore_print_from_ram_and_continue);
 	if (!saved_printing) return;
 	
 #ifdef FANCHECK
@@ -11647,7 +11646,7 @@ void restore_print_from_ram_and_continue(float e_move)
 
 // Cancel the state related to a currently saved print
 void cancel_saved_printing()
-{
+{ REC_SENTINEL(cancel_saved_printing);
     eeprom_update_byte((uint8_t*)EEPROM_UVLO, 0);
     saved_target[0] = SAVED_TARGET_UNSET;
     saved_printing_type = PRINTING_TYPE_NONE;
@@ -11866,7 +11865,7 @@ void M600_load_filament_movements()
 	st_synchronize();
 }
 
-void M600_load_filament() {
+void M600_load_filament() { REC_SENTINEL(M600_load_filament);
 	//load filament for single material and SNMM 
 	lcd_wait_interact();
 
@@ -11921,7 +11920,7 @@ void M600_load_filament() {
 //!
 //! Set
 void marlin_wait_for_click()
-{
+{ REC_SENTINEL(marlin_wait_for_click);
     int8_t busy_state_backup = busy_state;
     KEEPALIVE_STATE(PAUSED_FOR_USER);
     lcd_consume_click();

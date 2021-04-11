@@ -4,6 +4,7 @@
 
 #define GUARD_UNDER
 #define GUARD_OVER
+#define GUARD_RECURSION
 
 typedef uint8_t GuardType;
 static constexpr GuardType GuardValue = 0xA5;
@@ -123,5 +124,9 @@ public:
 };
 
 
+#ifdef GUARD_RECURSION
 #define REC_SENTINEL_N(name, n) static uint8_t __ ## name ## _d = 0; RecSentinel __ ## name ## _s(__ ## name ## _d, n)
+#else
+#define REC_SENTINEL_N(name, n)
+#endif
 #define REC_SENTINEL(name) REC_SENTINEL_N(name, RecSentinel::def_limit)
