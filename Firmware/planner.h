@@ -122,7 +122,7 @@ typedef struct __attribute__((packed)) {
 #endif
 
   // Save/recovery state data
-  float gcode_target[NUM_AXIS]; // GUARD    // Target (abs mm) of the original Gcode instruction
+  Guard<float, NUM_AXIS> gcode_target; // Target (abs mm) of the original Gcode instruction
   uint16_t gcode_feedrate;          // Default and/or move feedrate
   uint16_t sdlen;                   // Length of the Gcode instruction
 } block_t;

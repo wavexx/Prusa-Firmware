@@ -737,6 +737,7 @@ void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate
 
   // Prepare to set up new block
   block_t *block = &block_buffer[block_buffer_head];
+  block->gcode_target.reset();
 
   // Mark block as not busy (Not executed by the stepper interrupt, could be still tinkered with.)
   block->busy = false;

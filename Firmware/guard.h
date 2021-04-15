@@ -28,9 +28,14 @@ template<typename T, uint16_t N> class Guard
     };
 
  public:
-    Guard()
+    void reset()
     {
         guard_reset(this, sizeof(T), N);
+    }
+
+    Guard()
+    {
+        reset();
     }
 
     Guard(const char* str)
@@ -41,14 +46,14 @@ template<typename T, uint16_t N> class Guard
     Guard(T v0)
     {
         buf[0] = v0;
-        guard_reset(this, sizeof(T), N);
+        reset();
     }
 
     Guard(T v0, T v1)
     {
         buf[0] = v0;
         buf[1] = v1;
-        guard_reset(this, sizeof(T), N);
+        reset();
     }
 
     Guard(T v0, T v1, T v2)
@@ -56,7 +61,7 @@ template<typename T, uint16_t N> class Guard
         buf[0] = v0;
         buf[1] = v1;
         buf[2] = v2;
-        guard_reset(this, sizeof(T), N);
+        reset();
     }
 
     Guard(T v0, T v1, T v2, T v3)
@@ -65,7 +70,7 @@ template<typename T, uint16_t N> class Guard
         buf[1] = v1;
         buf[2] = v2;
         buf[3] = v3;
-        guard_reset(this, sizeof(T), N);
+        reset();
     }
 
     Guard(T v0, T v1, T v2, T v3, T v4, T v5, T v6)
@@ -77,7 +82,7 @@ template<typename T, uint16_t N> class Guard
         buf[4] = v4;
         buf[5] = v5;
         buf[6] = v6;
-        guard_reset(this, sizeof(T), N);
+        reset();
     }
 
     ~Guard()
