@@ -462,7 +462,7 @@ bool SdBaseFile::mkdir(SdBaseFile* parent, const char* path, bool pFlag) {
   return false;
 }
 //------------------------------------------------------------------------------
-bool SdBaseFile::mkdir(SdBaseFile* parent, const Guard<uint8_t, 11> dname) {
+bool SdBaseFile::mkdir(SdBaseFile* parent, const uint8_t dname[11]) {
   uint32_t block;
   dir_t d;
   dir_t* p;
@@ -619,7 +619,7 @@ bool SdBaseFile::open(SdBaseFile* dirFile, const char* path, uint8_t oflag) {
 //------------------------------------------------------------------------------
 // open with filename in dname
 bool SdBaseFile::open(SdBaseFile* dirFile,
-  const Guard<uint8_t, 11> dname, uint8_t oflag) {
+  const uint8_t dname[11], uint8_t oflag) {
   bool emptyFound = false;
   bool fileFound = false;
   uint8_t index;
