@@ -33,6 +33,12 @@ template<typename T, uint16_t N> class Guard
         guard_reset(this, sizeof(T), N);
     }
 
+    void* addr()
+    {
+        return this;
+    }
+
+
     Guard()
     {
         reset();
@@ -115,6 +121,16 @@ template<typename T, uint16_t N> class Guard
         return *(T*)guard_check_index(this, sizeof(T), N, i);
     }
 };
+
+
+void* guard_memcpy_check(void* dst, void* src, uint16_t size, uint8_t t_size);
+
+template<typename T, uint16_t N>
+void*
+memcpy(Guard<T, N>& dst, const Guard<T, N>& src, uint16_t size)
+{
+    return guard_memcpy_check(dst.addr(), src.addr(), size, sizeof(dst));
+}
 
 
 class RecSentinel

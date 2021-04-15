@@ -79,6 +79,18 @@ void* guard_check_index(void* start, uint8_t size, uint16_t len, uint16_t i)
 }
 
 
+void* guard_memcpy_check(void* dst, void* src, uint16_t size, uint8_t t_size)
+{
+    memcpy(dst, src, size);
+    if(size != t_size)
+    {
+        guard_hook();
+        printf_P(PSTR("= %06p %06p %d %d\n"), dst, src, size, t_size);
+    }
+    return dst;
+}
+
+
 RecSentinel::RecSentinel(uint8_t& addr, uint8_t limit)
 {
     this->addr = &addr;
