@@ -88,7 +88,7 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
 				// Allocate enough stack space for the full path to a folder, trailing slash, and nul
 				bool prepend_is_empty = (prepend[0] == '\0');
 				int len = (prepend_is_empty ? 1 : strlen(prepend)) + strlen(lfilename) + 1 + 1;
-				char path[len]; // GUARD
+				char path[len]; Guard<char, 0> _guard;
 				// Append the FOLDERNAME12/ to the passed string.
 				// It contains the full path to the "parent" argument.
 				// We now have the full path to the item in this folder.
@@ -839,7 +839,7 @@ void CardReader::presort() {
 
 		if (fileCnt > 1) {
 			// Init sort order.
-			uint8_t sort_order[fileCnt]; // GUARD
+			uint8_t sort_order[fileCnt]; Guard<char, 0> _guard;
 			for (uint16_t i = 0; i < fileCnt; i++) {
 				if (!IS_SD_INSERTED) return;
 				manage_heater();
@@ -1004,7 +1004,7 @@ void CardReader::presort() {
 			SERIAL_PROTOCOLLN();
 			#endif
 
-			uint8_t sort_order_reverse_index[fileCnt]; // GUARD
+			uint8_t sort_order_reverse_index[fileCnt]; Guard<char, 0> _guard_1007;
 			for (uint8_t i = 0; i < fileCnt; i++)
 				sort_order_reverse_index[sort_order[i]] = i;
 			for (uint8_t i = 0; i < fileCnt; i++)
