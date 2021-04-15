@@ -667,6 +667,7 @@ void lcdui_print_status_line(void)
             }
             break;
         case CustomMsg::TempCal: // PINDA temp calibration in progress
+            {
             Guard<char, LCD_WIDTH + 1> statusLine;
             sprintf_P(statusLine, PSTR("%-20S"), _T(MSG_TEMP_CALIBRATION));
             Guard<char, 4> progress;
@@ -674,6 +675,7 @@ void lcdui_print_status_line(void)
             memcpy(statusLine + 12, progress, sizeof(progress) - 1);
             lcd_set_cursor(0, 3);
             lcd_print(statusLine);
+            }
             break;
         case CustomMsg::TempCompPreheat: // temp compensation preheat
             lcd_puts_at_P(0, 3, _i("PINDA Heating"));////MSG_PINDA_PREHEAT c=20 r=1
