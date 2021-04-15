@@ -662,7 +662,7 @@ void CardReader::checkautostart(bool force)
     {
       Guard<char, 30> cmd;
       // M23: Select SD file
-      sprintf_P(cmd, PSTR("M23 %s"), autoname);
+      sprintf_P(cmd, PSTR("M23 %s"), (char*)autoname);
       enquecommand(cmd);
       // M24: Start/resume SD print
       enquecommand_P(PSTR("M24"));

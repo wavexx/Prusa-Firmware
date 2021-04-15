@@ -237,7 +237,7 @@ static void menu_draw_item_select_sheet_E(char type_char, const Sheet &sheet)
     lcd_set_cursor(0, menu_row);
     SheetFormatBuffer buffer;
     menu_format_sheet_select_E(sheet, buffer);
-    lcd_printf_P(PSTR("%c%-18.18s%c"), menu_selection_mark(), buffer.c, type_char);
+    lcd_printf_P(PSTR("%c%-18.18s%c"), menu_selection_mark(), (char*)buffer.c, type_char);
 }
 
 
@@ -246,7 +246,7 @@ static void menu_draw_item_puts_E(char type_char, const Sheet &sheet)
     lcd_set_cursor(0, menu_row);
     SheetFormatBuffer buffer;
     menu_format_sheet_E(sheet, buffer);
-    lcd_printf_P(PSTR("%c%-18.18s%c"), menu_selection_mark(), buffer.c, type_char);
+    lcd_printf_P(PSTR("%c%-18.18s%c"), menu_selection_mark(), (char*)buffer.c, type_char);
 }
 
 static void menu_draw_item_puts_P(char type_char, const char* str, char num)
@@ -458,7 +458,7 @@ void menu_draw_P<int16_t*>(char chr, const char* str, int16_t val)
     memset(spaces,' ', LCD_WIDTH);
 	if (val <= -100) spaces[15 - text_len - 1] = 0;
 	else spaces[15 - text_len] = 0;
-	lcd_printf_P(menu_fmt_int3, chr, str, spaces, val);
+	lcd_printf_P(menu_fmt_int3, chr, str, (char*)spaces, val);
 }
 
 template<>

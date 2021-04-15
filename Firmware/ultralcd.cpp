@@ -463,7 +463,7 @@ void lcdui_print_percent_done(void)
 			Guard<char, 8> sheet;
 			eeprom_read_block(sheet, EEPROM_Sheets_base->s[sheetNR].name, 7);
 			sheet[7] = '\0';
-			lcd_printf_P(PSTR("%-7s"),sheet);
+			lcd_printf_P(PSTR("%-7s"),(char*)sheet);
 			return; //do not also print the percentage
 		}
 	}
@@ -1443,7 +1443,7 @@ void lcd_menu_extruder_info()                     // NOT static due to using ins
     Guard<char, maxChars> print;
     pgmtext_with_colon(_i("Nozzle FAN"), nozzle, maxChars);  ////c=10 r=1
     pgmtext_with_colon(_i("Print FAN"), print, maxChars);  ////c=10 r=1
-	lcd_printf_P(_N("%s %4d RPM\n" "%s %4d RPM\n"), nozzle, 60*fan_speed[0], print, 60*fan_speed[1] ); 
+	lcd_printf_P(_N("%s %4d RPM\n" "%s %4d RPM\n"), (char*)nozzle, 60*fan_speed[0], (char*)print, 60*fan_speed[1] );
     menu_back_if_clicked();
 }
 
@@ -1700,7 +1700,7 @@ static void lcd_menu_temperatures_line(const char *ipgmLabel, int value){
     static const size_t maxChars = 15;    
     Guard<char, maxChars> tmp;
     pgmtext_with_colon(ipgmLabel, tmp, maxChars);
-    lcd_printf_P(PSTR(" %s%3d\x01 \n"), tmp, value); // no need to add -14.14 to string alignment
+    lcd_printf_P(PSTR(" %s%3d\x01 \n"), (char*)tmp, value); // no need to add -14.14 to string alignment
 }
 
 //! @brief Show Temperatures
@@ -1960,7 +1960,7 @@ static void lcd_support_menu()
       if (((menu_item - 1) == menu_line) && lcd_draw_update) {
           lcd_set_cursor(2, menu_row);
           ip4_to_str(_md->ip_str, (uint8_t*)(&_md->ip));
-          lcd_printf_P(PSTR("%s"), _md->ip_str);
+          lcd_printf_P(PSTR("%s"), (char*)_md->ip_str);
       }
   }
   
@@ -1973,7 +1973,7 @@ static void lcd_support_menu()
       if (((menu_item - 1) == menu_line) && lcd_draw_update) {
           lcd_set_cursor(2, menu_row);
           ip4_to_str(_md->ip_str, (uint8_t*)(&IP_address));
-          lcd_printf_P(PSTR("%s"), _md->ip_str);
+          lcd_printf_P(PSTR("%s"), (char*)_md->ip_str);
       }
   }
 
@@ -4613,7 +4613,7 @@ void lcd_first_layer_calibration_reset()
     lcd_set_cursor(0, 0);
     float offset = static_cast<int16_t>(eeprom_read_word(reinterpret_cast<uint16_t*>(&EEPROM_Sheets_base->s[(eeprom_read_byte(&(EEPROM_Sheets_base->active_sheet)))].z_offset)))/cs.axis_steps_per_unit[Z_AXIS];
     lcd_printf_P(_i("Sheet %.7s\nZ offset: %+1.3f mm\n%cContinue\n%cStart from zero"), //// \n denotes line break, %.7s is replaced by 7 character long sheet name, %+1.3f is replaced by 6 character long floating point number, %c is replaced by > or white space (one character) based on whether first or second option is selected. % denoted place holders can not be reordered. r=4
-            sheet_name, offset, menuData->reset ? ' ' : '>', menuData->reset ? '>' : ' ');
+                 (char*)sheet_name, offset, menuData->reset ? ' ' : '>', menuData->reset ? '>' : ' ');
 
 }
 

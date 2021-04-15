@@ -11295,7 +11295,7 @@ void restore_print_from_eeprom(bool mbl_was_active) { REC_SENTINEL(restore_print
 
 	MYSERIAL.print(filename);
 	strcat_P(filename, PSTR(".gco"));
-	sprintf_P(cmd, PSTR("M23 %s"), filename);
+	sprintf_P(cmd, PSTR("M23 %s"), (char*)filename);
 	enquecommand(cmd);
 	uint32_t position = eeprom_read_dword((uint32_t*)(EEPROM_FILE_POSITION));
 	SERIAL_ECHOPGM("Position read from eeprom:");
