@@ -259,8 +259,7 @@ void tmc2130_st_isr()
 #ifdef DEBUG_CRASHDET_COUNTERS
 			tmc2130_sg_change = true;
 #endif
-			uint8_t sg_thr = 64;
-//			if (axis == Y_AXIS) sg_thr = 64;
+			uint16_t sg_thr = tmc2130_mres2usteps(tmc2130_mres[axis]) * 4; // 4 cycles
 			if (tmc2130_sg_err[axis] >= sg_thr)
 			{
 				tmc2130_sg_err[axis] = 0;
