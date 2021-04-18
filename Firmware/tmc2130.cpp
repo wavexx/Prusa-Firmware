@@ -249,9 +249,11 @@ void tmc2130_st_isr()
 	for (uint8_t axis = X_AXIS; axis <= Z_AXIS; axis++)
 	{
 		uint8_t mask = (X_AXIS_MASK << axis);
-		if (diag_mask & mask) tmc2130_sg_err[axis]++;
-		else
-			if (tmc2130_sg_err[axis] > 0) tmc2130_sg_err[axis]--;
+        if (diag_mask & mask)
+            tmc2130_sg_err[axis]++;
+        else
+            tmc2130_sg_err[axis] >>= 1;
+
 		if (tmc2130_sg_cnt[axis] < tmc2130_sg_err[axis])
 		{
 			tmc2130_sg_cnt[axis] = tmc2130_sg_err[axis];
