@@ -244,7 +244,6 @@ extern bool is_usb_printing;
 void tmc2130_st_isr()
 {
 	if (tmc2130_mode == TMC2130_MODE_SILENT || tmc2130_sg_stop_on_crash == false) return;
-	uint8_t crash = 0;
 	uint8_t diag_mask = tmc2130_sample_diag();
 //	for (uint8_t axis = X_AXIS; axis <= E_AXIS; axis++)
 	for (uint8_t axis = X_AXIS; axis <= Z_AXIS; axis++)
@@ -264,19 +263,15 @@ void tmc2130_st_isr()
 			{
 				tmc2130_sg_cnt[axis] = 0;
 				tmc2130_sg_err[axis] = 0;
-				crash |= mask;
+				tmc2130_sg_crash |= mask;
 			}
 		}
 	}
-	if (tmc2130_sg_homing_axes_mask == 0)
-	{
-		if (tmc2130_sg_stop_on_crash && crash)
-		{
-			tmc2130_sg_crash = crash;
-			tmc2130_sg_stop_on_crash = false;
-			crashdet_stop_and_save_print();
-		}
-	}
+    if (tmc2130_sg_crash && tmc2130_sg_homing_axes_mask == 0)
+    {
+        tmc2130_sg_stop_on_crash = false;
+        crashdet_stop_and_save_print();
+    }
 }
 
 
