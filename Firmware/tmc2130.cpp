@@ -262,6 +262,7 @@ void tmc2130_st_isr()
 			uint16_t sg_thr = tmc2130_mres2usteps(tmc2130_mres[axis]) * 4; // 4 cycles
 			if (tmc2130_sg_err[axis] >= sg_thr)
 			{
+				tmc2130_sg_cnt[axis] = 0;
 				tmc2130_sg_err[axis] = 0;
 				crash |= mask;
 			}
