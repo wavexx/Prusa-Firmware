@@ -3749,6 +3749,7 @@ static void gcode_M600(bool automatic, bool runout, float x_position, float y_po
     int feedmultiplyBckp = feedmultiply;
     float HotendTempBckp = degTargetHotend(active_extruder);
     int fanSpeedBckp = fanSpeed;
+    bool cooldown = false;
 
     lastpos[X_AXIS] = current_position[X_AXIS];
     lastpos[Y_AXIS] = current_position[Y_AXIS];
@@ -3771,8 +3772,11 @@ static void gcode_M600(bool automatic, bool runout, float x_position, float y_po
     plan_buffer_line_curposXYZE(FILAMENTCHANGE_XYFEED);
     st_synchronize();
 
-    //Beep, manage nozzle heater and wait for user to start unload filament
-    if(!mmu_enabled) M600_wait_for_user(HotendTempBckp);
+    if(!mmu_enabled)
+    {
+        //Beep, manage nozzle heater and wait for user to start unload filament
+        cooldown = M600_wait_for_user(HotendTempBckp);
+    }
 
     lcd_change_fil_state = 0;
 
@@ -3785,7 +3789,9 @@ static void gcode_M600(bool automatic, bool runout, float x_position, float y_po
     else
     {
         // unload filament for single material (used also in M702)
-        unload_filament(runout? UnloadType::Runout: UnloadType::Swap);
+        unload_filament(runout? UnloadType::Runout:
+                        cooldown? UnloadType::Purge:
+                        UnloadType::Swap);
     }
 
     //finish moves
@@ -11984,7 +11990,8 @@ void M600_check_state(float nozzle_temp)
 //! If times out, active extruder temperature is set to 0.
 //!
 //! @param HotendTempBckp Temperature to be restored for active extruder, after user resolves MMU problem.
-void M600_wait_for_user(float HotendTempBckp) {
+//! @return True if the wait involved a hotend cooldown due to timeout.
+bool M600_wait_for_user(float HotendTempBckp) {
 
 		KEEPALIVE_STATE(PAUSED_FOR_USER);
 
@@ -11993,6 +12000,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 		uint8_t wait_for_user_state = 0;
 		lcd_display_message_fullscreen_P(_T(MSG_PRESS_TO_UNLOAD));
 		bool bFirst=true;
+		bool bCooldown=false;
 
 		while (!(wait_for_user_state == 0 && lcd_clicked())){
 			manage_heater();
@@ -12025,6 +12033,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 					lcd_display_message_fullscreen_P(_i("Press the knob to preheat nozzle and continue."));////MSG_PRESS_TO_PREHEAT c=20 r=4
 					wait_for_user_state = 1;
 					setAllTargetHotends(0);
+					bCooldown = true;
 					st_synchronize();
 					disable_e0();
 					disable_e1();
@@ -12059,6 +12068,7 @@ void M600_wait_for_user(float HotendTempBckp) {
 
 		}
 		WRITE(BEEPER, LOW);
+		return bCooldown;
 }
 
 void M600_load_filament_movements()
