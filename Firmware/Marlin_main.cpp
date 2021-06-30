@@ -845,8 +845,8 @@ void factory_reset()
 void show_fw_version_warnings() {
 	if (FW_DEV_VERSION == FW_VERSION_GOLD || FW_DEV_VERSION == FW_VERSION_RC) return;
 	switch (FW_DEV_VERSION) {
-	case(FW_VERSION_ALPHA):   lcd_show_fullscreen_message_and_wait_P(_i("You are using firmware alpha version. This is development version. Using this version is not recommended and may cause printer damage."));   break;////MSG_FW_VERSION_ALPHA c=20 r=8
-	case(FW_VERSION_BETA):    lcd_show_fullscreen_message_and_wait_P(_i("You are using firmware beta version. This is development version. Using this version is not recommended and may cause printer damage."));    break;////MSG_FW_VERSION_BETA c=20 r=8
+	case(FW_VERSION_ALPHA):   lcd_show_fullscreen_message_and_wait_P(_i("You are using firmware alpha version. This is development version. Using this version is not recommended and may cause printer damage."));/*//MSG_FW_VERSION_ALPHA c=20 r=8*/   break;
+	case(FW_VERSION_BETA):    lcd_show_fullscreen_message_and_wait_P(_i("You are using firmware beta version. This is development version. Using this version is not recommended and may cause printer damage."));/*//MSG_FW_VERSION_BETA c=20 r=8*/   break;
   case(FW_VERSION_DEVEL):
 	case(FW_VERSION_DEBUG):
     lcd_update_enable(false);
@@ -861,7 +861,7 @@ void show_fw_version_warnings() {
     lcd_puts_at_P(0, 3, PSTR(FW_REPOSITORY));
     lcd_wait_for_click();
     break;
-//	default: lcd_show_fullscreen_message_and_wait_P(_i("WARNING: This is an unofficial, unsupported build. Use at your own risk!")); break;////MSG_FW_VERSION_UNKNOWN c=20 r=8
+//	default: lcd_show_fullscreen_message_and_wait_P(_i("WARNING: This is an unofficial, unsupported build. Use at your own risk!"));/*//MSG_FW_VERSION_UNKNOWN c=20 r=8*/ break;
 	}
 	lcd_update_enable(true);
 }
@@ -872,14 +872,16 @@ static void check_if_fw_is_on_right_printer(){
   if((PRINTER_TYPE == PRINTER_MK3) || (PRINTER_TYPE == PRINTER_MK3S)){
     #ifdef IR_SENSOR
       if (pat9125_probe()){
-        lcd_show_fullscreen_message_and_wait_P(_i("MK3S firmware detected on MK3 printer"));}////MSG_MK3S_FIRMWARE_ON_MK3 c=20 r=4
+        lcd_show_fullscreen_message_and_wait_P(_i("MK3S firmware detected on MK3 printer"));////MSG_MK3S_FIRMWARE_ON_MK3 c=20 r=4
+        }
     #endif //IR_SENSOR
 
     #ifdef PAT9125
       //will return 1 only if IR can detect filament in bondtech extruder so this may fail even when we have IR sensor
       const uint8_t ir_detected = !READ(IR_SENSOR_PIN);
       if (ir_detected){
-        lcd_show_fullscreen_message_and_wait_P(_i("MK3 firmware detected on MK3S printer"));}////MSG_MK3_FIRMWARE_ON_MK3S c=20 r=4
+        lcd_show_fullscreen_message_and_wait_P(_i("MK3 firmware detected on MK3S printer"));////MSG_MK3_FIRMWARE_ON_MK3S c=20 r=4
+        }
     #endif //PAT9125
   }
 #endif //FILAMENT_SENSOR
@@ -1585,15 +1587,15 @@ void setup()
 	  //if motherboard or printer type was changed inform user as it can indicate flashing wrong firmware version
 	  //if user confirms with knob, new hw version (printer and/or motherboard) is written to eeprom and message will be not shown next time
 	case(0b01): 
-		lcd_show_fullscreen_message_and_wait_P(_i("Warning: motherboard type changed.")); ////MSG_CHANGED_MOTHERBOARD c=20 r=4
+		lcd_show_fullscreen_message_and_wait_P(_i("Warning: motherboard type changed."));////MSG_CHANGED_MOTHERBOARD c=20 r=4
 		eeprom_write_word((uint16_t*)EEPROM_BOARD_TYPE, MOTHERBOARD); 
 		break;
 	case(0b10): 
-		lcd_show_fullscreen_message_and_wait_P(_i("Warning: printer type changed.")); ////MSG_CHANGED_PRINTER c=20 r=4
+		lcd_show_fullscreen_message_and_wait_P(_i("Warning: printer type changed."));////MSG_CHANGED_PRINTER c=20 r=4
 		eeprom_write_word((uint16_t*)EEPROM_PRINTER_TYPE, PRINTER_TYPE); 
 		break;
 	case(0b11): 
-		lcd_show_fullscreen_message_and_wait_P(_i("Warning: both printer type and motherboard type changed.")); ////MSG_CHANGED_BOTH c=20 r=4
+		lcd_show_fullscreen_message_and_wait_P(_i("Warning: both printer type and motherboard type changed."));////MSG_CHANGED_BOTH c=20 r=4
 		eeprom_write_word((uint16_t*)EEPROM_PRINTER_TYPE, PRINTER_TYPE);
 		eeprom_write_word((uint16_t*)EEPROM_BOARD_TYPE, MOTHERBOARD); 
 		break;
@@ -1601,7 +1603,8 @@ void setup()
   }
 
   if (!previous_settings_retrieved) {
-	  lcd_show_fullscreen_message_and_wait_P(_i("Old settings found. Default PID, Esteps etc. will be set.")); //if EEPROM version or printer type was changed, inform user that default setting were loaded////MSG_DEFAULT_SETTINGS_LOADED c=20 r=6
+      //if EEPROM version or printer type was changed, inform user that default setting were loaded
+	  lcd_show_fullscreen_message_and_wait_P(_i("Old settings found. Default PID, Esteps etc. will be set."));////MSG_DEFAULT_SETTINGS_LOADED c=20 r=6
 	  Config_StoreSettings();
   }
   if (eeprom_read_byte((uint8_t*)EEPROM_WIZARD_ACTIVE) >= 1) {
@@ -3785,8 +3788,7 @@ static void gcode_M600(bool automatic, float x_position, float y_position, float
     if (!mmu_enabled)
     {
         KEEPALIVE_STATE(PAUSED_FOR_USER);
-        lcd_change_fil_state = lcd_show_fullscreen_message_yes_no_and_wait_P(_i("Was filament unload successful?"),
-                false, true); ////MSG_UNLOAD_SUCCESSFUL c=20 r=2
+        lcd_change_fil_state = lcd_show_fullscreen_message_yes_no_and_wait_P(_i("Was filament unload successful?"),false, true);////MSG_UNLOAD_SUCCESSFUL c=20 r=2
         if (lcd_change_fil_state == 0)
         {
 			lcd_clear();
